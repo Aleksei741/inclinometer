@@ -11,21 +11,18 @@ class Trailer1AxelWindow(CarFrame):
         main_frame = tk.Frame(master)
         main_frame.pack(pady=10, padx=10)
 
-        self.total_toe = tk.Label(main_frame, text="Общее схождение:", font=("Arial", 12, "bold"))
-        self.total_toe.grid(row=0, column=1, pady=0)
+        # ----------- Заголовок -----------
+        tk.Label(main_frame, text="Общее схождение оси:", font=("Arial", 12, "bold")).grid(row=0, column=1, pady=0)
 
         # ----------- Картинка шасси -----------
         self.img = tk.PhotoImage(file="img/TRAILER_1_AXLE.png")
-        self.bg_label = tk.Label(main_frame, image=self.img)
-        self.bg_label.grid(row=1, column=1, rowspan=4, columnspan=1)
+        tk.Label(main_frame, image=self.img).grid(row=1, column=1, rowspan=4, columnspan=1)
 
         # ----------- Таблицы параметров левого фиксированного колеса 1 ----------
-        self.table_l3 = self.creatTableFixedWheelParams(main_frame, 0, "left")
-        self.table_l3.grid(row=4, column=0, padx=5) 
+        self.creatTableFixedWheelParams(main_frame, 0, "left").grid(row=4, column=0, padx=5) 
         
         # ----------- Таблицы параметров правого фиксированного колеса 1 ----------
-        self.table_r3 = self.creatTableFixedWheelParams(main_frame, 0, "right")
-        self.table_r3.grid(row=4, column=2, padx=5)
+        self.creatTableFixedWheelParams(main_frame, 0, "right").grid(row=4, column=2, padx=5)
 
         # ----------- Спинбоксы "Общее схождение" поверх картинки -----------
         # Передня ось 1

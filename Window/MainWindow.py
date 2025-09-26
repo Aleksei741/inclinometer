@@ -8,6 +8,7 @@ from Window.Trailer1AxelWindow import Trailer1AxelWindow
 from Window.Trailer2AxelWindow import Trailer2AxelWindow
 from Window.Trailer3AxelWindow import Trailer3AxelWindow
 from Window.RigidTrailer2AxelWindow import RigidTrailer2AxelWindow
+from Report import save_to_pdf
 
 # Фрейм для схемы автомобиля
 class CarFrame(tk.Frame):
@@ -179,6 +180,8 @@ class MainWindow(tk.Tk):
             self.truck_window = Trailer3AxelWindow(self.scheme_frame, self.vehicle_data)
         elif truck_body == TruckBodyType.RIGID_TRAILER_2_AXLE:
             self.truck_window = RigidTrailer2AxelWindow(self.scheme_frame, self.vehicle_data)
+        elif truck_body == TruckBodyType.MINIBUS:
+            self.truck_window = Truck2AxelWindow(self.scheme_frame, self.vehicle_data)
 
         self.truck_window.pack(fill="both", expand=True)
 
@@ -222,6 +225,7 @@ class MainWindow(tk.Tk):
 
     def save_pdf(self):
         print("Сохранение отчета в PDF...")
+        save_to_pdf(self.vehicle_data, "report.pdf")
 
     def save_session(self):
         print("Сохранение сессии...")

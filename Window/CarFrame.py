@@ -6,6 +6,7 @@ class CarFrame(tk.Frame):
         super().__init__(master)
         self.vehicle_data = vehicle_data
     
+    # ----------- Таблица параметров подруливающего колеса -----------
     def creatTableSteerableWheelParams(self, parent_frame: tk.Frame, axle_index: int, side: str) -> tk.Frame: 
         operations = ["Развал", "Схождение", "Угол продольного\n наклона шкворня",
                     "Угол поперечного\n наклона шкворня", "Разность углов\n в повороте"]
@@ -14,7 +15,7 @@ class CarFrame(tk.Frame):
         table = tk.Frame(parent_frame)
         # Заголовки
         for col, text in enumerate(headers):
-            lbl = tk.Label(table, text=text, font=("Arial", 10, "bold"), borderwidth=1, relief="ridge", padx=5, pady=5)
+            lbl = tk.Label(table, text=text, font=("Arial", 10, "bold"), borderwidth=1, relief="ridge", padx=1, pady=1)
             lbl.grid(row=0, column=col, sticky="nsew")
         
         # Данные
@@ -60,27 +61,33 @@ class CarFrame(tk.Frame):
         
         return table
     
-    def creatTableFixedWheelParams(self, parent_frame: tk.Frame, axle_index: int, side: str) -> tk.Frame:        
+    # ----------- Таблица параметров фиксированного колеса -----------
+    def creatTableFixedWheelParams(self, parent_frame: tk.Frame, axle_index: int, side: str,
+                                   axel_shift=True, axle_twist=True) -> tk.Frame:        
         operations = ["Развал", "Сдвиг оси", "Перекос оси"]
         headers = ["До", "Операция", "После"]
 
         table = tk.Frame(parent_frame)
         # Заголовки
         for col, text in enumerate(headers):
-            lbl = tk.Label(table, text=text, font=("Arial", 10, "bold"), borderwidth=1, relief="ridge", padx=5, pady=5)
+            lbl = tk.Label(table, text=text, font=("Arial", 10, "bold"), borderwidth=1, relief="ridge", padx=1, pady=1)
             lbl.grid(row=0, column=col, sticky="nsew")
 
         # Данные
         for row, op in enumerate(operations, start=1):
-            if(row == 1):
+            if(row == 1):   # Развал
                 val_before = self.vehicle_data.get_camber(axle_index, side, "before")
                 val_after = self.vehicle_data.get_camber(axle_index, side, "after")
-            elif(row == 2):
+            elif(row == 2): # Сдвиг оси
                 val_before = self.vehicle_data.get_axel_shift(axle_index, side, "before") 
                 val_after = self.vehicle_data.get_axel_shift(axle_index, side, "after")
-            elif(row == 3): 
+                if(not axel_shift):
+                    continue  # Пропустить эту строку, если сдвиг оси не применяется
+            elif(row == 3): # Перекос оси
                 val_before = self.vehicle_data.get_axle_twist(axle_index, side, "before") 
                 val_after = self.vehicle_data.get_axle_twist(axle_index, side, "after")
+                if(not axle_twist):
+                    continue  # Пропустить эту строку, если перекос оси не применяется
             else:   
                 val_before = 0 
                 val_after = 0
@@ -88,13 +95,13 @@ class CarFrame(tk.Frame):
             val_before = 0 if val_before is None else val_before
             val_after = 0 if val_after is None else val_after
 
-            lbl_before = tk.Label(table, text=f"{val_before}°", borderwidth=1, relief="ridge", padx=2, pady=0)
+            lbl_before = tk.Label(table, text=f"{val_before}°", borderwidth=1, relief="ridge", padx=1, pady=0)
             lbl_before.grid(row=row, column=0, sticky="nsew")
 
-            lbl_op = tk.Label(table, text=op, borderwidth=1, relief="ridge", padx=2, pady=0)
+            lbl_op = tk.Label(table, text=op, borderwidth=1, relief="ridge", padx=1, pady=0)
             lbl_op.grid(row=row, column=1, sticky="nsew")
 
-            lbl_after = tk.Label(table, text=f"{val_after}°", borderwidth=1, relief="ridge", padx=2, pady=0)
+            lbl_after = tk.Label(table, text=f"{val_after}°", borderwidth=1, relief="ridge", padx=1, pady=0)
             lbl_after.grid(row=row, column=2, sticky="nsew")
 
         # Настройка растяжки
@@ -107,6 +114,7 @@ class CarFrame(tk.Frame):
 
         return table
 
+    # ----------- Таблица общего схождения -----------
     def creatTableTotalToe(self, parent_frame: tk.Frame, index: int) -> tk.Frame:
         toe_frame = tk.Frame(parent_frame)
 
@@ -131,10 +139,40 @@ class CarFrame(tk.Frame):
         
         return toe_frame
     
-    def on_total_toe_update(self, axle_index: int, position: str, var: tk.DoubleVar):
+    def on_total_toe_update(self, axle_index: int, stage: str, var: tk.DoubleVar):
         """Обновить данные vehicle_data при изменении общего схождения"""
         try:
             value = float(var.get())
-            self.vehicle_data.set_total_toe(axle_index, position, value)
+            self.vehicle_data.set_total_toe(axle_index, stage, value)
         except ValueError:
             pass  # Игнорируем ошибки преобразования
+
+    #
+    def creatTableMiddlePositionSteeringWheel(self, parent_frame: tk.Frame) -> tk.Frame:
+        frame = tk.Frame(parent_frame)
+
+        lbl_before = tk.Label(frame, text="До", borderwidth=1, relief="ridge", padx=2, pady=0)
+        lbl_before.grid(row=0, column=0, sticky="nsew")
+        lbl_after = tk.Label(frame, text="После", borderwidth=1, relief="ridge", padx=2, pady=0)
+        lbl_after.grid(row=0, column=1, sticky="nsew")
+        
+        var_before = tk.DoubleVar()
+        var_before.set(self.vehicle_data.get_middle_position_steering_wheel("before") or 0.0)        
+        spin_before = tk.Spinbox(frame, from_=-20, to=20, increment=0.01, textvariable=var_before, width=8)
+        spin_before.grid(row=1, column=0, sticky="nsew")       
+        var_before.trace_add("write", lambda *args, v=var_before: self.on_middle_position_steering_wheel_update("before", v)) 
+
+        var_after = tk.DoubleVar()
+        var_after.set(self.vehicle_data.get_middle_position_steering_wheel("after") or 0.0)        
+        val_after = tk.Spinbox(frame, from_=-20, to=20, increment=0.01, textvariable=var_after, width=8)
+        val_after.grid(row=1, column=1, sticky="nsew")
+        var_after.trace_add("write", lambda *args, v=var_after: self.on_middle_position_steering_wheel_update("after", v))
+        return frame
+    
+    def on_middle_position_steering_wheel_update(self, stage: str, var: tk.DoubleVar):
+        """Обновить данные среднего положения рулевого колеса"""
+        try:
+            value = float(var.get())
+            self.vehicle_data.set_middle_position_steering_wheel(stage, value)
+        except ValueError:
+            pass  # Игнорируем ошибки преобразования    

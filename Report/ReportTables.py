@@ -1,0 +1,117 @@
+from reportlab.platypus import Paragraph, Table, TableStyle
+from reportlab.lib import colors
+from reportlab.lib.styles import ParagraphStyle
+from Truck import VehicleAlignmentData
+
+def creatTableSteerableWheelParams(vehicle_data: VehicleAlignmentData, axle_index: int, side: str, place_width) -> Table:
+    center_style = ParagraphStyle(
+        name='Center',
+        alignment=1,  # 0=LEFT, 1=CENTER, 2=RIGHT, 4=JUSTIFY
+        fontName='DejaVu',  # твой шрифт с кириллицей
+        fontSize=8
+        )
+
+    operations = ["Развал", "Схождение", "Угол продольного наклона шкворня",
+                    "Угол поперечного наклона шкворня", "Разность углов в повороте"]
+    headers = ["До", "Операция", "После"]
+
+    camber_before = f"{vehicle_data.get_camber(axle_index, side, 'before') or '-'}"
+    camber_after  = f"{vehicle_data.get_camber(axle_index, side, 'after') or '-'}"
+    toe_before    = f"{vehicle_data.get_toe(axle_index, side, 'before') or '-'}"
+    toe_after     = f"{vehicle_data.get_toe(axle_index, side, 'after') or '-'}"
+    caster_angle_before  = f"{vehicle_data.get_caster_angle(axle_index, side, 'before') or '-'}"
+    caster_angle_after   = f"{vehicle_data.get_caster_angle(axle_index, side, 'after') or '-'}"
+    steering_axis_inclination_before = f"{vehicle_data.get_steering_axis_inclination(axle_index, side, 'before') or '-'}"
+    steering_axis_inclination_after  = f"{vehicle_data.get_steering_axis_inclination(axle_index, side, 'after') or '-'}"
+    turning_angle_difference_before  = f"{vehicle_data.get_turning_angle_difference(axle_index, side, 'before') or '-'}"
+    turning_angle_difference_after   = f"{vehicle_data.get_turning_angle_difference(axle_index, side, 'after') or '-'}"
+    
+    company_info = [
+        [Paragraph(headers[0], center_style), Paragraph(headers[1], center_style), Paragraph(headers[2], center_style)],
+        [Paragraph(camber_before, center_style), Paragraph(operations[0], center_style), Paragraph(camber_after, center_style)],
+        [Paragraph(toe_before, center_style), Paragraph(operations[1], center_style), Paragraph(toe_after, center_style)],
+        [Paragraph(caster_angle_before, center_style), Paragraph(operations[2], center_style), Paragraph(caster_angle_after, center_style)],
+        [Paragraph(steering_axis_inclination_before, center_style), Paragraph(operations[3], center_style), Paragraph(steering_axis_inclination_after, center_style)],
+        [Paragraph(turning_angle_difference_before, center_style), Paragraph(operations[4], center_style), Paragraph(turning_angle_difference_after, center_style)]
+    ]
+    
+    col_widths = [place_width * 0.2, place_width * 0.6, place_width * 0.2]
+
+    table = Table(company_info, hAlign='CENTER', colWidths=col_widths)
+    table.setStyle(TableStyle([
+    ('BOX', (0,0), (-1,-1), 1, colors.black),
+    ('GRID', (0,0), (-1,-1), 0.5, colors.black),
+    ('VALIGN', (0,0), (-1,-1), 'MIDDLE'),
+    ('ALIGN', (0,0), (-1,-1), 'CENTER'),
+    ('BACKGROUND', (0,0), (-1,0), colors.lightgrey),
+    ('VALIGN', (0,0), (-1,-1), 'MIDDLE'),
+    ('ALIGN', (0,0), (-1,-1), 'CENTER'),
+    ]))
+    return table
+
+def creatTableFixedWheelParams(vehicle_data: VehicleAlignmentData, axle_index: int, side: str, place_width, axel_shift=True, axle_twist=True) -> Table:
+    center_style = ParagraphStyle(
+        name='Center',
+        alignment=1,  # 0=LEFT, 1=CENTER, 2=RIGHT, 4=JUSTIFY
+        fontName='DejaVu',  # твой шрифт с кириллицей
+        fontSize=8
+        )
+
+    operations = ["Развал", "Сдвиг оси", "Перекос оси"]
+    headers = ["До", "Операция", "После"]
+
+    camber_before = f"{vehicle_data.get_camber(axle_index, side, "before") or '-'}"
+    camber_after = f"{vehicle_data.get_camber(axle_index, side, "after") or '-'}"
+    axel_shift_before = f"{vehicle_data.get_axel_shift(axle_index, side, "before") or '-'}"
+    axel_shift_after = f"{vehicle_data.get_axel_shift(axle_index, side, "after") or '-'}"
+    axle_twist_before = f"{vehicle_data.get_axle_twist(axle_index, side, "before") or '-'}"
+    axle_twist_after = f"{vehicle_data.get_axle_twist(axle_index, side, "after") or '-'}"
+
+    company_info = [
+        [Paragraph(headers[0], center_style), Paragraph(headers[1], center_style), Paragraph(headers[2], center_style)],
+        [Paragraph(camber_before, center_style), Paragraph(operations[0], center_style), Paragraph(camber_after, center_style)],
+        [Paragraph(axel_shift_before, center_style), Paragraph(operations[1], center_style), Paragraph(axel_shift_after, center_style)],
+        [Paragraph(axle_twist_before, center_style), Paragraph(operations[2], center_style), Paragraph(axle_twist_after, center_style)]
+    ]
+    
+    col_widths = [place_width * 0.2, place_width * 0.6, place_width * 0.2]
+
+    table = Table(company_info, hAlign='CENTER', colWidths=col_widths)
+    table.setStyle(TableStyle([
+    ('BOX', (0,0), (-1,-1), 1, colors.black),
+    ('GRID', (0,0), (-1,-1), 0.5, colors.black),
+    ('VALIGN', (0,0), (-1,-1), 'MIDDLE'),
+    ('ALIGN', (0,0), (-1,-1), 'CENTER'),
+    ('BACKGROUND', (0,0), (-1,0), colors.lightgrey),
+    ('VALIGN', (0,0), (-1,-1), 'MIDDLE'),
+    ('ALIGN', (0,0), (-1,-1), 'CENTER'),
+    ]))
+    return table
+
+def CreateMiddlePositionSteeringWheelTable(vehicle_data, width: float, normal_style) -> Table:
+    """Создать таблицу среднего положения рулевого колеса"""
+
+    # Значения
+    val_before = vehicle_data.get_middle_position_steering_wheel("before") or 0.0
+    val_after = vehicle_data.get_middle_position_steering_wheel("after") or 0.0
+
+    # Данные для таблицы
+    data = [
+        [Paragraph("", normal_style), Paragraph("До", normal_style), Paragraph("После", normal_style)],
+        [Paragraph("Среднее положение рулевого колеса", normal_style),
+         Paragraph(f"{val_before:.2f}", normal_style),
+         Paragraph(f"{val_after:.2f}", normal_style)]
+    ]
+
+    col_widths = [width*0.5, width*0.25, width*0.25]
+
+    table = Table(data, colWidths=col_widths, hAlign='CENTER')
+    table.setStyle(TableStyle([
+        ('BOX', (0,0), (-1,-1), 1, colors.black),
+        ('GRID', (1,0), (-1,-1), 0.5, colors.grey),  # только сетка внутри
+        ('VALIGN', (0,0), (-1,-1), 'MIDDLE'),
+        ('ALIGN', (1,0), (-1,-1), 'CENTER'),
+        ('BACKGROUND', (1,0), (-1,0), colors.lightgrey)
+    ]))
+
+    return table

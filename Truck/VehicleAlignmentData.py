@@ -1,6 +1,7 @@
 from threading import RLock
 from typing import List
 from Truck.TruckTypes import TruckBodyType
+import os
 import json
 
 class Wheel():
@@ -58,6 +59,7 @@ class VehicleAlignmentData:
     """Основной класс для хранения данных о развале/схождении."""
     def __init__(self, body_type: TruckBodyType = None):
         self._lock = RLock()
+        
         self._steerable_axles: List[SteerableAxle] = []
         self._fixed_axles: List[FixedAxle] = []
         self.clear_data()
@@ -80,6 +82,10 @@ class VehicleAlignmentData:
             self._mileage = None        # пробег
             self._reg_number = None     # регистрационный номер
             self._owner = None          # владелец
+
+            # Среднее положение рулевого колеса
+            self._middle_position_steering_wheel_before = None  # Среднее положение рулевого колеса до
+            self._middle_position_steering_wheel_after = None   # Среднее положение рулевого колеса после
 
             # Оси
             self._steerable_axles.clear()  # Поворотные оси
@@ -209,6 +215,22 @@ class VehicleAlignmentData:
     def body_type(self):
         return self._truck_body_type
     
+    # ---------- Давление ----------
+    def set_pressure(self, axle_index: int, side: str, value: float):
+        with self._lock:
+            axle, axle_type = self._get_axle(axle_index)
+            wheel = self._get_wheel(axle, side)
+            wheel.presure = value
+            print(f"Установлено давление {value:.1f} бар в {side} шину {axle_type} оси #{axle_index+1}")
+
+    def get_pressure(self, axle_index: int, side: str) -> float:
+        with self._lock:
+            axle, axle_type = self._get_axle(axle_index)
+            wheel = self._get_wheel(axle, side)
+            value = wheel.presure
+            print(f"Чтение давления {value:.1f} бар в {side} шине {axle_type} оси #{axle_index+1}")
+            return value
+    
     # ---------- Вспомогательные функции ----------
     def _get_axle(self, axle_index: int):
         total_axles = len(self._steerable_axles) + len(self._fixed_axles)
@@ -230,32 +252,24 @@ class VehicleAlignmentData:
         else:
             raise ValueError("Сторона должна быть 'left' или 'right'")
 
-    # ---------- Давление ----------
-    def set_pressure(self, axle_index: int, side: str, value: float):
-        with self._lock:
-            axle, axle_type = self._get_axle(axle_index)
-            wheel = self._get_wheel(axle, side)
-            wheel.presure = value
-            print(f"Установлено давление {value:.1f} бар в {side} шину {axle_type} оси #{axle_index+1}")
-
-    def get_pressure(self, axle_index: int, side: str) -> float:
-        with self._lock:
-            axle, axle_type = self._get_axle(axle_index)
-            wheel = self._get_wheel(axle, side)
-            value = wheel.presure
-            print(f"Чтение давления {value:.1f} бар в {side} шине {axle_type} оси #{axle_index+1}")
-            return value
-
     # ---------- Универсальный setter ----------
     def _set_wheel_param(self, axle_index: int, side: str, stage: str, param: str, value):
         with self._lock:
             if stage not in ("before", "after"):
                 raise ValueError("stage должен быть 'before' или 'after'")
             axle, axle_type = self._get_axle(axle_index)
-            wheel = self._get_wheel(axle, side)
-            attr_name = f"{param}_{stage}" if hasattr(wheel, f"{param}_{stage}") else param
-            setattr(wheel, attr_name, value)
-            print(f"Установлено {attr_name}={value} в {side} шину {axle_type} оси #{axle_index+1}")
+
+            if side == "both":
+                wheels = [axle.left_wheel, axle.right_wheel]
+                sides = ["left", "right"]
+            else:
+                wheels = [self._get_wheel(axle, side)]
+                sides = [side]
+
+            for w, s in zip(wheels, sides):
+                attr_name = f"{param}_{stage}" if hasattr(w, f"{param}_{stage}") else param
+                setattr(w, attr_name, value)
+                print(f"Установлено {attr_name}={value} в {s} шину {axle_type} оси #{axle_index+1}")
 
     # ---------- Универсальный getter ----------
     def _get_wheel_param(self, axle_index: int, side: str, stage: str, param: str):
@@ -336,6 +350,24 @@ class VehicleAlignmentData:
             value = getattr(axle, attr_name)
             print(f"Чтение {attr_name}={value} в {axle_type} оси #{axle_index+1}")
             return value
+        
+    # ---------- Среднее положение рулевого колеса ----------
+    def set_middle_position_steering_wheel(self, stage: str, value: float):
+        with self._lock:
+            if stage not in ("before", "after"):
+                raise ValueError("stage должен быть 'before' или 'after'")
+            attr_name = f"_middle_position_steering_wheel_{stage}"
+            setattr(self, attr_name, value)
+            print(f"Установлено {attr_name}={value}")
+    
+    def get_middle_position_steering_wheel(self, stage: str) -> float:
+        with self._lock:
+            if stage not in ("before", "after"):
+                raise ValueError("stage должен быть 'before' или 'after'")
+            attr_name = f"_middle_position_steering_wheel_{stage}"
+            value = getattr(self, attr_name)
+            print(f"Чтение {attr_name}={value}")
+            return value
 
 
     # ---------- Сериализация в словарь ----------
@@ -363,17 +395,15 @@ class VehicleAlignmentData:
                 "mileage": self._mileage,
                 "reg_number": self._reg_number,
                 "owner": self._owner,
+                "middle_position_steering_wheel_before": self._middle_position_steering_wheel_before,
+                "middle_position_steering_wheel_after": self._middle_position_steering_wheel_after,
                 "steerable_axles": [self._axle_to_dict(axle) for axle in self._steerable_axles],
                 "fixed_axles": [self._axle_to_dict(axle) for axle in self._fixed_axles]
             }
 
     @staticmethod
     def from_dict(data: dict):
-        """
-        Создаёт новый VehicleAlignmentData из словаря (например, из JSON).
-        При восстановлении осей создаём новые объекты SteerableAxle/FixedAxle и
-        заполняем их поля из JSON, затем добавляем в списки.
-        """
+        """Создает объект VehicleAlignmentData из словаря."""
         truck_body_name = data.get("truck_body_type")
         body_type = None
         if truck_body_name:
@@ -404,6 +434,10 @@ class VehicleAlignmentData:
         obj._mileage = data.get("mileage")
         obj._reg_number = data.get("reg_number")
         obj._owner = data.get("owner")
+
+        # Среднее положение рулевого колеса
+        obj._middle_position_steering_wheel_before = data.get("middle_position_steering_wheel_before")
+        obj._middle_position_steering_wheel_after = data.get("middle_position_steering_wheel_after")
 
         # ----- Восстанавливаем подруливающие оси (создаём новые объекты) -----
         obj._steerable_axles = []
@@ -467,10 +501,9 @@ class VehicleAlignmentData:
             json.dump(self.to_dict(), f, ensure_ascii=False, indent=4)
 
     @staticmethod
-    def load_from_file(filename: str):
-        import os
+    def load_from_file(filename: str):        
         if not os.path.exists(filename):
-            return VehicleAlignmentData()
+            raise FileNotFoundError
         with open(filename, "r", encoding="utf-8") as f:
             data = json.load(f)
         return VehicleAlignmentData.from_dict(data)
