@@ -3,7 +3,7 @@ from reportlab.lib.pagesizes import A4
 from reportlab.lib import colors
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, Image, Flowable
 from reportlab.lib.styles import ParagraphStyle
-from Truck import VehicleAlignmentData
+from Truck import VehicleAlignmentData, TruckBodyType
 from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
 
@@ -109,7 +109,40 @@ def CreateMeasurementInfoBox(width: float, normal_style) -> Table:
 
     return table
 
+# Табличка исполнитель, дата, примечания
+def createTableEnd(width: float, normal_style) -> Table:
+    mail_style = ParagraphStyle(
+        name='NormalDejaVu',
+        fontName='DejaVu',
+        fontSize=12,
+        leading=14,
+        alignment=2  # Выравнивание по правому краю
+    )
 
+    img_path = "img/lasertruck.png"
+    footer_data = [
+        [Paragraph("Исполнитель:", normal_style), Paragraph("Дата:", normal_style), ""],
+        [Paragraph("Примечания:", normal_style), "", Paragraph("www.lasertruck.ru<br/>info@lasertruck.ru", mail_style)],
+        ["", "", Image(img_path, width=120, height=20)]
+    ]
+
+    col_widths = [width * 0.4, width * 0.3, width * 0.3]
+
+    table = Table(footer_data, hAlign='CENTER', colWidths=col_widths)
+    table.setStyle(TableStyle([
+        # Общая рамка и сетка
+        ('BOX', (0, 0), (1, 2), 1, colors.black),   # рамка вокруг первых 2х колонок
+        ('GRID', (0, 0), (1, 0), 0.5, colors.black), # линии только в первой строке
+
+        # Объединение ячеек "Примечания"
+        ('SPAN', (0, 1), (1, 2)),
+        ('VALIGN', (0, 1), (1, 2), 'TOP'),
+        ('ALIGN', (0, 1), (1, 2), 'LEFT'),
+
+        ('ALIGN', (2, 1), (2, 1), 'RIGHT'),
+        ('ALIGN', (2, 2), (2, 2), 'RIGHT')
+    ]))
+    return table
 
 def save_to_pdf(vehicle_data: VehicleAlignmentData, pdf_path: str):
 
@@ -137,24 +170,25 @@ def save_to_pdf(vehicle_data: VehicleAlignmentData, pdf_path: str):
     elements.append(table)
     
     table = CreateTableCarInfo(vehicle_data, place_width, normal_style)
-    elements.append(Spacer(1, 12))
+    elements.append(Spacer(1, 5))
     elements.append(table)
 
     Title = createTitle(title_style)
-    elements.append(Spacer(1, 12))
+    elements.append(Spacer(1, 5))
     elements.append(Title)
 
     table = CreateMeasurementInfoBox(place_width, normal_style)
-    elements.append(Spacer(1, 12))
+    elements.append(Spacer(1, 5))
     elements.append(table)
 
-
+    if vehicle_data.body_type == TruckBodyType.TRUCK_2_AXLE:
+        flow = Truck2Axel(vehicle_data) 
     
-
-    flow = Truck2Axel(vehicle_data) 
-    elements.append(Spacer(1, 12))
+    elements.append(Spacer(1, 5))
     elements.append(flow)
 
+    table = createTableEnd(place_width, normal_style)
+    elements.append(Spacer(1, 5))
+    elements.append(table)
 
-
-    doc.build(elements)
+    doc.build(elements) 

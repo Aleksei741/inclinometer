@@ -26,7 +26,7 @@ def creatTableSteerableWheelParams(vehicle_data: VehicleAlignmentData, axle_inde
     turning_angle_difference_before  = f"{vehicle_data.get_turning_angle_difference(axle_index, side, 'before') or '-'}"
     turning_angle_difference_after   = f"{vehicle_data.get_turning_angle_difference(axle_index, side, 'after') or '-'}"
     
-    company_info = [
+    table_data = [
         [Paragraph(headers[0], center_style), Paragraph(headers[1], center_style), Paragraph(headers[2], center_style)],
         [Paragraph(camber_before, center_style), Paragraph(operations[0], center_style), Paragraph(camber_after, center_style)],
         [Paragraph(toe_before, center_style), Paragraph(operations[1], center_style), Paragraph(toe_after, center_style)],
@@ -37,7 +37,7 @@ def creatTableSteerableWheelParams(vehicle_data: VehicleAlignmentData, axle_inde
     
     col_widths = [place_width * 0.2, place_width * 0.6, place_width * 0.2]
 
-    table = Table(company_info, hAlign='CENTER', colWidths=col_widths)
+    table = Table(table_data, hAlign='CENTER', colWidths=col_widths)
     table.setStyle(TableStyle([
     ('BOX', (0,0), (-1,-1), 1, colors.black),
     ('GRID', (0,0), (-1,-1), 0.5, colors.black),
@@ -67,16 +67,17 @@ def creatTableFixedWheelParams(vehicle_data: VehicleAlignmentData, axle_index: i
     axle_twist_before = f"{vehicle_data.get_axle_twist(axle_index, side, "before") or '-'}"
     axle_twist_after = f"{vehicle_data.get_axle_twist(axle_index, side, "after") or '-'}"
 
-    company_info = [
-        [Paragraph(headers[0], center_style), Paragraph(headers[1], center_style), Paragraph(headers[2], center_style)],
-        [Paragraph(camber_before, center_style), Paragraph(operations[0], center_style), Paragraph(camber_after, center_style)],
-        [Paragraph(axel_shift_before, center_style), Paragraph(operations[1], center_style), Paragraph(axel_shift_after, center_style)],
-        [Paragraph(axle_twist_before, center_style), Paragraph(operations[2], center_style), Paragraph(axle_twist_after, center_style)]
-    ]
-    
+    table_data = list()
+    table_data.append([Paragraph(headers[0], center_style), Paragraph(headers[1], center_style), Paragraph(headers[2], center_style)])
+    table_data.append([Paragraph(camber_before, center_style), Paragraph(operations[0], center_style), Paragraph(camber_after, center_style)])
+    if axel_shift:
+        table_data.append([Paragraph(axel_shift_before, center_style), Paragraph(operations[1], center_style), Paragraph(axel_shift_after, center_style)])    
+    if axle_twist:
+        table_data.append([Paragraph(axle_twist_before, center_style), Paragraph(operations[2], center_style), Paragraph(axle_twist_after, center_style)])
+        
     col_widths = [place_width * 0.2, place_width * 0.6, place_width * 0.2]
 
-    table = Table(company_info, hAlign='CENTER', colWidths=col_widths)
+    table = Table(table_data, hAlign='CENTER', colWidths=col_widths)
     table.setStyle(TableStyle([
     ('BOX', (0,0), (-1,-1), 1, colors.black),
     ('GRID', (0,0), (-1,-1), 0.5, colors.black),
@@ -88,30 +89,72 @@ def creatTableFixedWheelParams(vehicle_data: VehicleAlignmentData, axle_index: i
     ]))
     return table
 
-def CreateMiddlePositionSteeringWheelTable(vehicle_data, width: float, normal_style) -> Table:
+def CreateMiddlePositionSteeringWheelTable(vehicle_data: VehicleAlignmentData, width: float) -> Table:
     """Создать таблицу среднего положения рулевого колеса"""
+    center_style = ParagraphStyle(
+        name='Center',
+        alignment=1,  # 0=LEFT, 1=CENTER, 2=RIGHT, 4=JUSTIFY
+        fontName='DejaVu',  # твой шрифт с кириллицей
+        fontSize=8
+        )
+    
+    operations = ["Среднее положение рулевого колеса"]
+    headers = ["До", "Операция", "После"]
 
     # Значения
-    val_before = vehicle_data.get_middle_position_steering_wheel("before") or 0.0
-    val_after = vehicle_data.get_middle_position_steering_wheel("after") or 0.0
+    val_before = f"{vehicle_data.get_middle_position_steering_wheel("before") or "-"}"
+    val_after = f"{vehicle_data.get_middle_position_steering_wheel("after") or "-"}"
 
-    # Данные для таблицы
-    data = [
-        [Paragraph("", normal_style), Paragraph("До", normal_style), Paragraph("После", normal_style)],
-        [Paragraph("Среднее положение рулевого колеса", normal_style),
-         Paragraph(f"{val_before:.2f}", normal_style),
-         Paragraph(f"{val_after:.2f}", normal_style)]
-    ]
+    table_data = list()
+    table_data.append([Paragraph(headers[0], center_style), Paragraph(headers[1], center_style), Paragraph(headers[2], center_style)])
+    table_data.append([Paragraph(val_before, center_style), Paragraph(operations[0], center_style), Paragraph(val_after, center_style)])
 
-    col_widths = [width*0.5, width*0.25, width*0.25]
+    col_widths = [width * 0.2, width * 0.6, width * 0.2]
 
-    table = Table(data, colWidths=col_widths, hAlign='CENTER')
+    table = Table(table_data, colWidths=col_widths, hAlign='CENTER')
     table.setStyle(TableStyle([
         ('BOX', (0,0), (-1,-1), 1, colors.black),
-        ('GRID', (1,0), (-1,-1), 0.5, colors.grey),  # только сетка внутри
+        ('GRID', (0,0), (-1,-1), 0.5, colors.black),
         ('VALIGN', (0,0), (-1,-1), 'MIDDLE'),
-        ('ALIGN', (1,0), (-1,-1), 'CENTER'),
-        ('BACKGROUND', (1,0), (-1,0), colors.lightgrey)
+        ('ALIGN', (0,0), (-1,-1), 'CENTER'),
+        ('BACKGROUND', (0,0), (-1,0), colors.lightgrey),
+        ('VALIGN', (0,0), (-1,-1), 'MIDDLE'),
+        ('ALIGN', (0,0), (-1,-1), 'CENTER'),
+    ]))
+
+    return table
+
+def creatTotalToeTable(vehicle_data: VehicleAlignmentData, axel_index: int, place_width: float) -> Table:
+    """Создать таблицу суммарного схождения"""  
+    center_style = ParagraphStyle(
+    name='Center',
+    alignment=1,  # 0=LEFT, 1=CENTER, 2=RIGHT, 4=JUSTIFY
+    fontName='DejaVu',  # твой шрифт с кириллицей
+    fontSize=8
+    )
+    
+    operations = ["Общее схождение оси"]
+    headers = ["До", "После"]
+
+    val_before = f"{vehicle_data.get_total_toe(axel_index, "before") or "-"}"
+    val_after = f"{vehicle_data.get_total_toe(axel_index, "after") or "-"}"
+
+    table_data = [
+        [Paragraph(headers[0], center_style), Paragraph(headers[1], center_style)],
+        [Paragraph(val_before, center_style), Paragraph(val_after, center_style)]
+    ]
+
+    col_widths = [place_width * 0.5, place_width * 0.5]
+    table = Table(table_data, hAlign='CENTER', colWidths=col_widths)
+    table.setStyle(TableStyle([
+        ('BOX', (0,0), (-1,-1), 1, colors.black),
+        ('GRID', (0,0), (-1,-1), 0.5, colors.black),
+        ('VALIGN', (0,0), (-1,-1), 'MIDDLE'),
+        ('ALIGN', (0,0), (-1,-1), 'CENTER'),
+        ('BACKGROUND', (0,0), (-1,0), colors.lightgrey),
+        ('BACKGROUND', (0,1), (1,1), colors.white),
+        ('VALIGN', (0,0), (-1,-1), 'MIDDLE'),
+        ('ALIGN', (0,0), (-1,-1), 'CENTER'),
     ]))
 
     return table
