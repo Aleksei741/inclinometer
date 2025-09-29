@@ -1,6 +1,10 @@
-﻿import tkinter as tk
+﻿import asyncio
+import tkinter as tk
 from tkinter import ttk
+from tkinter import messagebox
 from Truck import VehicleAlignmentData, TruckBodyType
+from BLE import BLEApp
+from Window.ConnectWindow import ConnectWindow
 from Window.Truck2AxelWindow import Truck2AxelWindow
 from Window.Truck3AxelWindow import Truck3AxelWindow
 from Window.Truck4AxelWindow import Truck4AxelWindow
@@ -10,19 +14,13 @@ from Window.Trailer3AxelWindow import Trailer3AxelWindow
 from Window.RigidTrailer2AxelWindow import RigidTrailer2AxelWindow
 from Report import save_to_pdf
 
-# Фрейм для схемы автомобиля
-class CarFrame(tk.Frame):
-    def __init__(self, parent, car_brand, *args, **kwargs):
-        super().__init__(parent, *args, **kwargs)
-        label = tk.Label(self, text=f"Схема автомобиля: {car_brand}", bg="lightgray")
-        label.pack(fill="both", expand=True, padx=10, pady=10)
-
 
 class MainWindow(tk.Tk):
     def __init__(self, vehicle_data: VehicleAlignmentData):
         super().__init__()
 
         self.vehicle_data = vehicle_data
+        self.ble = BLEApp()
  
         self.title("Диагностика автомобиля")
         self.geometry("900x600")
@@ -54,7 +52,9 @@ class MainWindow(tk.Tk):
         button_frame = tk.Frame(self.scrollable_frame)
         button_frame.pack(fill="x", padx=10, pady=5)
 
-        tk.Button(button_frame, text="Загрузить данные с прибора", command=self.load_data).pack(side="left", padx=5)
+        tk.Button(button_frame, text="Подключиться к прибору", command=self.connect_dev).pack(side="left", padx=5)
+        self.read_button = tk.Button(button_frame, text="Загрузить данные с прибора", command=self.load_data, state=tk.DISABLED)
+        self.read_button.pack(side="left", padx=5)
         tk.Button(button_frame, text="Сохранить отчет (PDF)", command=self.save_pdf).pack(side="left", padx=5)
         tk.Button(button_frame, text="Сохранить сессию", command=self.save_session).pack(side="left", padx=5)
         tk.Button(button_frame, text="Открыть сессию", command=self.load_session).pack(side="left", padx=5)
@@ -93,6 +93,8 @@ class MainWindow(tk.Tk):
         self.scheme_frame = ttk.LabelFrame(self.scrollable_frame, text="Схема автомобиля и сход-развал")
         self.scheme_frame.pack(fill="both", expand=True, padx=10, pady=5)
 
+        self.ubdate_truck_scheme()
+
     # ---------- Вспомогательные методы ----------
     def _add_labeled_entry(self, parent, text, value, row, col, width, callback):
         """Создание поля ввода с StringVar и привязкой обработчика"""
@@ -108,13 +110,12 @@ class MainWindow(tk.Tk):
         return var
  
     # ---------- методы обновления рабочей области ----------
-    def on_truck_body_change(self, new_body: TruckBodyType):
+    def ubdate_truck_scheme(self):
         """Меняем кузов и пересоздаём поля шин"""
-        self.truck_body = new_body
-        self._update_tire_fields(self.truck_body)
-        self._update_scheme_fields(self.truck_body)
+        self._update_tire_fields()
+        self._update_scheme_fields()
 
-    def _update_tire_fields(self, truck_body: TruckBodyType):
+    def _update_tire_fields(self):
         """Обновить количество полей шин в зависимости от TruckBodyType"""
         # Удаляем старые виджеты
         for widget in self.car_tires.winfo_children():
@@ -123,12 +124,10 @@ class MainWindow(tk.Tk):
         # Очищаем список переменных
         self.tire_vars.clear()
 
-        if not truck_body:
+        if not self.vehicle_data.body_type:
             return
 
-        self.truck_body = truck_body
-
-        for i in range(self.truck_body.total_axles):
+        for i in range(self.vehicle_data.body_type.total_axles):
             # Читаем текущее давление из VehicleAlignmentData, если есть
             left_value = self.vehicle_data.get_pressure(i, "left") or 2.2
             right_value = self.vehicle_data.get_pressure(i, "right") or 2.2
@@ -156,32 +155,33 @@ class MainWindow(tk.Tk):
             var_right.trace_add("write", lambda *args, v=var_right, idx=i: self.on_tire_update(idx, "right", v))
             self.tire_vars.append(var_right)
 
-    def _update_scheme_fields(self, truck_body: TruckBodyType):
+    def _update_scheme_fields(self):
         """ Обновить схему автомобиля """
         # Удаляем старые виджеты
         for widget in self.scheme_frame.winfo_children():
             widget.destroy()
 
-        if truck_body == TruckBodyType.TRUCK_2_AXLE:
+        if self.vehicle_data.body_type == TruckBodyType.TRUCK_2_AXLE:
             self.truck_window = Truck2AxelWindow(self.scheme_frame, self.vehicle_data)
-        elif truck_body == TruckBodyType.TRUCK_3_AXLE:
+        elif self.vehicle_data.body_type == TruckBodyType.TRUCK_3_AXLE:
             self.truck_window = Truck3AxelWindow(self.scheme_frame, self.vehicle_data)
-        elif truck_body == TruckBodyType.TRUCK_4_AXLE_TWIN_STEER:
+        elif self.vehicle_data.body_type == TruckBodyType.TRUCK_4_AXLE_TWIN_STEER:
             self.truck_window = Truck4AxelWindow(self.scheme_frame, self.vehicle_data)
-        elif truck_body == TruckBodyType.BUS_2_AXLE:
+        elif self.vehicle_data.body_type == TruckBodyType.BUS_2_AXLE:
             self.truck_window = Truck2AxelWindow(self.scheme_frame, self.vehicle_data)
-        elif truck_body == TruckBodyType.BUS_3_AXLE:
+        elif self.vehicle_data.body_type == TruckBodyType.BUS_3_AXLE:
             self.truck_window = Truck3AxelWindow(self.scheme_frame, self.vehicle_data)
-        elif truck_body == TruckBodyType.TRAILER_1_AXLE:
+        elif self.vehicle_data.body_type == TruckBodyType.TRAILER_1_AXLE:
             self.truck_window = Trailer1AxelWindow(self.scheme_frame, self.vehicle_data)
-        elif truck_body == TruckBodyType.TRAILER_2_AXLE:
+        elif self.vehicle_data.body_type == TruckBodyType.TRAILER_2_AXLE:
             self.truck_window = Trailer2AxelWindow(self.scheme_frame, self.vehicle_data)
-        elif truck_body == TruckBodyType.TRAILER_3_AXLE:
+        elif self.vehicle_data.body_type == TruckBodyType.TRAILER_3_AXLE:
             self.truck_window = Trailer3AxelWindow(self.scheme_frame, self.vehicle_data)
-        elif truck_body == TruckBodyType.RIGID_TRAILER_2_AXLE:
+        elif self.vehicle_data.body_type == TruckBodyType.RIGID_TRAILER_2_AXLE:
             self.truck_window = RigidTrailer2AxelWindow(self.scheme_frame, self.vehicle_data)
-        elif truck_body == TruckBodyType.MINIBUS:
+        elif self.vehicle_data.body_type == TruckBodyType.MINIBUS:
             self.truck_window = Truck2AxelWindow(self.scheme_frame, self.vehicle_data)
+        
 
         self.truck_window.pack(fill="both", expand=True)
 
@@ -220,12 +220,37 @@ class MainWindow(tk.Tk):
         elif field == "Владелец:":
             self.vehicle_data.set_owner(value)
 
+    def connect_dev(self):
+        print("Подключение к устройству")
+        win = ConnectWindow(self, self.vehicle_data, self.ble)
+        win.grab_set()
+        self.wait_window(win)
+
+        #if self.ble.is_connected():
+        self.read_button.config(state=tk.NORMAL)
+
     def load_data(self):
-        print("Загрузка данных с прибора...")
+        print("Загрузка данных с прибора")
+
+        if not self.ble.is_connected():
+            self.read_button.config(state=tk.DISABLED)
+
+        async def run_read():
+            try:
+                self.vehicle_data = await self.ble.read_data()
+            except Exception as e:
+                messagebox.showerror("Ошибка чтения", str(e))
+
+        asyncio.run(run_read())
+        
+        self.ubdate_truck_scheme()
 
     def save_pdf(self):
-        print("Сохранение отчета в PDF...")
-        save_to_pdf(self.vehicle_data, "report.pdf")
+        print("Сохранение отчета в PDF")
+        try:
+            save_to_pdf(self.vehicle_data, "report.pdf")
+        except Exception as e:
+            messagebox.showerror("Ошибка сохранения PDF", str(e))
 
     def save_session(self):
         print("Сохранение сессии...")

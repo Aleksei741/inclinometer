@@ -6,8 +6,15 @@ from reportlab.lib.styles import ParagraphStyle
 from Truck import VehicleAlignmentData, TruckBodyType
 from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
+from datetime import datetime
 
 from Report.Truck2AxelFrame import Truck2Axel
+from Report.Truck3AxelFrame import Truck3Axel
+from Report.Truck4AxelFrame import Truck4Axel
+from Report.Trailer1AxelFrame import Trailer1Axel
+from Report.Trailer2AxelFrame import Trailer2Axel
+from Report.Trailer3AxelFrame import Trailer3Axel
+from Report.RigidTrailer2AxelFrame import RigidTrailer2Axel
 
 def create_style():
     # Регистрируем шрифт с поддержкой кириллицы
@@ -36,8 +43,8 @@ def CreateTableCompanyInfo(vehicle_data: VehicleAlignmentData, place_width: floa
     # Информация о компании
     company_info = [
         [Paragraph("Наименование компании:", normal_style), Paragraph(vehicle_data.get_company_name() or "-", normal_style)],
-        [Paragraph("Адрес", normal_style), Paragraph(vehicle_data.get_address() or "-", normal_style)],
-        [Paragraph("Телефон", normal_style), Paragraph(vehicle_data.get_phone() or "-", normal_style)]
+        [Paragraph("Адрес:", normal_style), Paragraph(vehicle_data.get_address() or "-", normal_style)],
+        [Paragraph("Телефон:", normal_style), Paragraph(vehicle_data.get_phone() or "-", normal_style)]
     ]
     # Разбиваем ширину таблицы на колонки (например, 30% и 70%)
     col_widths = [place_width * 0.35, place_width * 0.65]
@@ -119,9 +126,11 @@ def createTableEnd(width: float, normal_style) -> Table:
         alignment=2  # Выравнивание по правому краю
     )
 
+    today_str = datetime.now().strftime("%d.%m.%Y")
+
     img_path = "img/lasertruck.png"
     footer_data = [
-        [Paragraph("Исполнитель:", normal_style), Paragraph("Дата:", normal_style), ""],
+        [Paragraph("Исполнитель:", normal_style), Paragraph(f"Дата: {today_str}", normal_style), ""],
         [Paragraph("Примечания:", normal_style), "", Paragraph("www.lasertruck.ru<br/>info@lasertruck.ru", mail_style)],
         ["", "", Image(img_path, width=120, height=20)]
     ]
@@ -151,13 +160,13 @@ def save_to_pdf(vehicle_data: VehicleAlignmentData, pdf_path: str):
     margin = 20          # отступ слева и справа
     place_width = A4[0] - 2 * margin    # ширина таблицы с учетом отступов
     
-    # Удаляем старый файл, если нужно
     if os.path.exists(pdf_path):
         try:
             os.remove(pdf_path)
         except PermissionError:
-            print(f"Не удалось удалить {pdf_path}, возможно файл открыт")
-            return
+            raise PermissionError(f"Не удалось удалить {pdf_path}, файл занят или нет прав")
+        except OSError as e:
+            raise OSError(f"Ошибка при удалении {pdf_path}: {e}")
 
 
     doc = SimpleDocTemplate(pdf_path, pagesize=A4,
@@ -183,7 +192,27 @@ def save_to_pdf(vehicle_data: VehicleAlignmentData, pdf_path: str):
 
     if vehicle_data.body_type == TruckBodyType.TRUCK_2_AXLE:
         flow = Truck2Axel(vehicle_data) 
-    
+    elif vehicle_data.body_type == TruckBodyType.TRUCK_3_AXLE:
+        flow = Truck3Axel(vehicle_data)
+    elif vehicle_data.body_type == TruckBodyType.TRUCK_4_AXLE_TWIN_STEER:
+        flow = Truck4Axel(vehicle_data) 
+    elif vehicle_data.body_type == TruckBodyType.BUS_2_AXLE:
+        flow = Truck2Axel(vehicle_data)
+    elif vehicle_data.body_type == TruckBodyType.BUS_3_AXLE:
+        flow = Truck3Axel(vehicle_data)
+    elif vehicle_data.body_type == TruckBodyType.TRAILER_1_AXLE:
+        flow = Trailer1Axel(vehicle_data)
+    elif vehicle_data.body_type == TruckBodyType.TRAILER_2_AXLE:
+        flow = Trailer2Axel(vehicle_data)
+    elif vehicle_data.body_type == TruckBodyType.TRAILER_3_AXLE:
+        flow = Trailer3Axel(vehicle_data)
+    elif vehicle_data.body_type == TruckBodyType.RIGID_TRAILER_2_AXLE:
+        flow = RigidTrailer2Axel(vehicle_data)
+    elif vehicle_data.body_type == TruckBodyType.MINIBUS:
+        flow = Truck2Axel(vehicle_data) 
+    else:
+        raise ValueError(f"Неподдерживаемый тип кузова: {vehicle_data.body_type}")
+        
     elements.append(Spacer(1, 5))
     elements.append(flow)
 

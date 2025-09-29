@@ -8,7 +8,8 @@ def creatTableSteerableWheelParams(vehicle_data: VehicleAlignmentData, axle_inde
         name='Center',
         alignment=1,  # 0=LEFT, 1=CENTER, 2=RIGHT, 4=JUSTIFY
         fontName='DejaVu',  # твой шрифт с кириллицей
-        fontSize=8
+        fontSize=8,
+        leading=9
         )
 
     operations = ["Развал", "Схождение", "Угол продольного наклона шкворня",
@@ -35,7 +36,8 @@ def creatTableSteerableWheelParams(vehicle_data: VehicleAlignmentData, axle_inde
         [Paragraph(turning_angle_difference_before, center_style), Paragraph(operations[4], center_style), Paragraph(turning_angle_difference_after, center_style)]
     ]
     
-    col_widths = [place_width * 0.2, place_width * 0.6, place_width * 0.2]
+    # col_widths = [place_width * 0.2, place_width * 0.6, place_width * 0.2]
+    col_widths = [place_width * 0.22, place_width * 0.56, place_width * 0.22]
 
     table = Table(table_data, hAlign='CENTER', colWidths=col_widths)
     table.setStyle(TableStyle([
@@ -44,8 +46,10 @@ def creatTableSteerableWheelParams(vehicle_data: VehicleAlignmentData, axle_inde
     ('VALIGN', (0,0), (-1,-1), 'MIDDLE'),
     ('ALIGN', (0,0), (-1,-1), 'CENTER'),
     ('BACKGROUND', (0,0), (-1,0), colors.lightgrey),
-    ('VALIGN', (0,0), (-1,-1), 'MIDDLE'),
-    ('ALIGN', (0,0), (-1,-1), 'CENTER'),
+    ('TOPPADDING', (0,0), (-1,-1), 1),
+    ('BOTTOMPADDING', (0,0), (-1,-1), 3),
+    ('LEFTPADDING', (0,0), (-1,-1), 1),
+    ('RIGHTPADDING', (0,0), (-1,-1), 1),
     ]))
     return table
 
@@ -54,7 +58,8 @@ def creatTableFixedWheelParams(vehicle_data: VehicleAlignmentData, axle_index: i
         name='Center',
         alignment=1,  # 0=LEFT, 1=CENTER, 2=RIGHT, 4=JUSTIFY
         fontName='DejaVu',  # твой шрифт с кириллицей
-        fontSize=8
+        fontSize=8,
+        leading=8
         )
 
     operations = ["Развал", "Сдвиг оси", "Перекос оси"]
@@ -76,6 +81,7 @@ def creatTableFixedWheelParams(vehicle_data: VehicleAlignmentData, axle_index: i
         table_data.append([Paragraph(axle_twist_before, center_style), Paragraph(operations[2], center_style), Paragraph(axle_twist_after, center_style)])
         
     col_widths = [place_width * 0.2, place_width * 0.6, place_width * 0.2]
+    col_widths = [place_width * 0.22, place_width * 0.56, place_width * 0.22]
 
     table = Table(table_data, hAlign='CENTER', colWidths=col_widths)
     table.setStyle(TableStyle([
@@ -84,8 +90,10 @@ def creatTableFixedWheelParams(vehicle_data: VehicleAlignmentData, axle_index: i
     ('VALIGN', (0,0), (-1,-1), 'MIDDLE'),
     ('ALIGN', (0,0), (-1,-1), 'CENTER'),
     ('BACKGROUND', (0,0), (-1,0), colors.lightgrey),
-    ('VALIGN', (0,0), (-1,-1), 'MIDDLE'),
-    ('ALIGN', (0,0), (-1,-1), 'CENTER'),
+    ('TOPPADDING', (0,0), (-1,-1), 1),
+    ('BOTTOMPADDING', (0,0), (-1,-1), 3),
+    ('LEFTPADDING', (0,0), (-1,-1), 1),
+    ('RIGHTPADDING', (0,0), (-1,-1), 1),
     ]))
     return table
 
@@ -95,7 +103,8 @@ def CreateMiddlePositionSteeringWheelTable(vehicle_data: VehicleAlignmentData, w
         name='Center',
         alignment=1,  # 0=LEFT, 1=CENTER, 2=RIGHT, 4=JUSTIFY
         fontName='DejaVu',  # твой шрифт с кириллицей
-        fontSize=8
+        fontSize=8,
+        leading=8
         )
     
     operations = ["Среднее положение рулевого колеса"]
@@ -118,8 +127,10 @@ def CreateMiddlePositionSteeringWheelTable(vehicle_data: VehicleAlignmentData, w
         ('VALIGN', (0,0), (-1,-1), 'MIDDLE'),
         ('ALIGN', (0,0), (-1,-1), 'CENTER'),
         ('BACKGROUND', (0,0), (-1,0), colors.lightgrey),
-        ('VALIGN', (0,0), (-1,-1), 'MIDDLE'),
-        ('ALIGN', (0,0), (-1,-1), 'CENTER'),
+        ('TOPPADDING', (0,0), (-1,-1), 1),
+        ('BOTTOMPADDING', (0,0), (-1,-1), 3),
+        ('LEFTPADDING', (0,0), (-1,-1), 1),
+        ('RIGHTPADDING', (0,0), (-1,-1), 1),
     ]))
 
     return table
@@ -130,7 +141,8 @@ def creatTotalToeTable(vehicle_data: VehicleAlignmentData, axel_index: int, plac
     name='Center',
     alignment=1,  # 0=LEFT, 1=CENTER, 2=RIGHT, 4=JUSTIFY
     fontName='DejaVu',  # твой шрифт с кириллицей
-    fontSize=8
+    fontSize=8,
+    leading=8
     )
     
     operations = ["Общее схождение оси"]
@@ -153,8 +165,10 @@ def creatTotalToeTable(vehicle_data: VehicleAlignmentData, axel_index: int, plac
         ('ALIGN', (0,0), (-1,-1), 'CENTER'),
         ('BACKGROUND', (0,0), (-1,0), colors.lightgrey),
         ('BACKGROUND', (0,1), (1,1), colors.white),
-        ('VALIGN', (0,0), (-1,-1), 'MIDDLE'),
-        ('ALIGN', (0,0), (-1,-1), 'CENTER'),
+        ('TOPPADDING', (0,0), (-1,-1), 1),
+        ('BOTTOMPADDING', (0,0), (-1,-1), 3),
+        ('LEFTPADDING', (0,0), (-1,-1), 1),
+        ('RIGHTPADDING', (0,0), (-1,-1), 1),
     ]))
 
     return table
