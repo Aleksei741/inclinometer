@@ -1,0 +1,61 @@
+{
+    "truck_body_type": "RIGID_TRAILER_2_AXLE",
+    "company_name": "TransLogistics RIGID_TRAILER_2_AXLE",
+    "address": "45 Industrial Road",
+    "phone": "+1234567890",
+    "car_brand": "HeavyHaul",
+    "model": "HT-2X",
+    "chassis_number": "RT-AX2001",
+    "mileage": 27850,
+    "reg_number": "RT-2AX",
+    "owner": "Freight Corp",
+    "middle_position_steering_wheel_before": 1.6,
+    "middle_position_steering_wheel_after": 1.3,
+    "steerable_axles": [],
+    "fixed_axles": [
+        {
+            "left_wheel": {
+                "presure": 2.4,
+                "camber_before": 1.2,
+                "camber_after": 1.1,
+                "axel_shift_before": 1.3,
+                "axel_shift_after": 1.2,
+                "axle_twist_before": 1.1,
+                "axle_twist_after": 1.2
+            },
+            "right_wheel": {
+                "presure": 2.3,
+                "camber_before": 1.1,
+                "camber_after": 1.0,
+                "axel_shift_before": 1.2,
+                "axel_shift_after": 1.1,
+                "axle_twist_before": 1.0,
+                "axle_twist_after": 1.1
+            },
+            "total_toe_before": 1.5,
+            "total_toe_after": 1.3
+        },
+        {
+            "left_wheel": {
+                "presure": 2.5,
+                "camber_before": 1.3,
+                "camber_after": 1.2,
+                "axel_shift_before": 1.4,
+                "axel_shift_after": 1.2,
+                "axle_twist_before": 1.2,
+                "axle_twist_after": 1.3
+            },
+            "right_wheel": {
+                "presure": 2.6,
+                "camber_before": 1.2,
+                "camber_after": 1.1,
+                "axel_shift_before": 1.3,
+                "axel_shift_after": 1.2,
+                "axle_twist_before": 1.1,
+                "axle_twist_after": 1.2
+            },
+            "total_toe_before": 1.6,
+            "total_toe_after": 1.4
+        }
+    ]
+}

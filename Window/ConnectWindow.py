@@ -33,20 +33,29 @@ class ConnectWindow(tk.Toplevel):
     def on_scan_devices(self):
         """Сканирование через BLEApp в отдельном потоке"""
         def run():
+            # блокируем кнопки
+            self.scan_button.config(state=tk.DISABLED)
+            self.connect_button.config(state=tk.DISABLED)
+
             loop = asyncio.new_event_loop()
             asyncio.set_event_loop(loop)
             try:
                 devices = loop.run_until_complete(self.ble_app.scan_devices())
                 self.devices = devices
-                self.device_list.delete(0, END)
+                self.device_list.delete(0, tk.END)
                 for i, d in enumerate(devices):
                     name = d.name or "Неизвестное устройство"
-                    self.device_list.insert(END, f"{i+1}. {name} [{d.address}]")
+                    self.device_list.insert(tk.END, f"{i+1}. {name} [{d.address}]")
             except Exception as e:
                 messagebox.showerror("Ошибка сканирования", str(e))
             finally:
                 loop.close()
+                # разблокируем кнопки
+                self.scan_button.config(state=tk.NORMAL)
+                self.connect_button.config(state=tk.NORMAL)
 
+        # запуск в отдельном потоке, чтобы не блокировать GUI
+        import threading
         threading.Thread(target=run, daemon=True).start()
 
     def on_connect_device(self):

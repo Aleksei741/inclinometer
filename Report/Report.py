@@ -16,11 +16,18 @@ from Report.Trailer2AxelFrame import Trailer2Axel
 from Report.Trailer3AxelFrame import Trailer3Axel
 from Report.RigidTrailer2AxelFrame import RigidTrailer2Axel
 
-def create_style():
-    # Регистрируем шрифт с поддержкой кириллицы
-    pdfmetrics.registerFont(TTFont('DejaVu', 'DejaVuSans.ttf'))
-    pdfmetrics.registerFont(TTFont('DejaVu-Italic', 'DejaVuSans-Oblique.ttf'))
+def register_fonts():
+    # путь к папке fonts относительно текущего файла
+    font_dir = os.path.join(os.path.dirname(__file__), "Fonts")
 
+    font_regular = os.path.join(font_dir, "DejaVuSans.ttf")
+    font_italic = os.path.join(font_dir, "DejaVuSans-Oblique.ttf")
+
+    # Регистрируем шрифты
+    pdfmetrics.registerFont(TTFont('DejaVu', font_regular))
+    pdfmetrics.registerFont(TTFont('DejaVu-Italic', font_italic))
+
+def create_style():
     # Создаем стиль для заголовков
     title_style = ParagraphStyle(
         name='TitleDejaVu',
@@ -154,7 +161,7 @@ def createTableEnd(width: float, normal_style) -> Table:
     return table
 
 def save_to_pdf(vehicle_data: VehicleAlignmentData, pdf_path: str):
-
+    register_fonts()
     title_style, normal_style = create_style()
 
     margin = 20          # отступ слева и справа

@@ -16,16 +16,16 @@ def creatTableSteerableWheelParams(vehicle_data: VehicleAlignmentData, axle_inde
                     "Угол поперечного наклона шкворня", "Разность углов в повороте"]
     headers = ["До", "Операция", "После"]
 
-    camber_before = f"{vehicle_data.get_camber(axle_index, side, 'before') or '-'}"
-    camber_after  = f"{vehicle_data.get_camber(axle_index, side, 'after') or '-'}"
-    toe_before    = f"{vehicle_data.get_toe(axle_index, side, 'before') or '-'}"
-    toe_after     = f"{vehicle_data.get_toe(axle_index, side, 'after') or '-'}"
-    caster_angle_before  = f"{vehicle_data.get_caster_angle(axle_index, side, 'before') or '-'}"
-    caster_angle_after   = f"{vehicle_data.get_caster_angle(axle_index, side, 'after') or '-'}"
-    steering_axis_inclination_before = f"{vehicle_data.get_steering_axis_inclination(axle_index, side, 'before') or '-'}"
-    steering_axis_inclination_after  = f"{vehicle_data.get_steering_axis_inclination(axle_index, side, 'after') or '-'}"
-    turning_angle_difference_before  = f"{vehicle_data.get_turning_angle_difference(axle_index, side, 'before') or '-'}"
-    turning_angle_difference_after   = f"{vehicle_data.get_turning_angle_difference(axle_index, side, 'after') or '-'}"
+    camber_before = f"{vehicle_data.get_camber(axle_index, side, 'before') or '0'}"
+    camber_after  = f"{vehicle_data.get_camber(axle_index, side, 'after') or '0'}"
+    toe_before    = f"{vehicle_data.get_toe(axle_index, side, 'before') or '0'}"
+    toe_after     = f"{vehicle_data.get_toe(axle_index, side, 'after') or '0'}"
+    caster_angle_before  = f"{vehicle_data.get_caster_angle(axle_index, side, 'before') or '0'}"
+    caster_angle_after   = f"{vehicle_data.get_caster_angle(axle_index, side, 'after') or '0'}"
+    steering_axis_inclination_before = f"{vehicle_data.get_steering_axis_inclination(axle_index, side, 'before') or '0'}"
+    steering_axis_inclination_after  = f"{vehicle_data.get_steering_axis_inclination(axle_index, side, 'after') or '0'}"
+    turning_angle_difference_before  = f"{vehicle_data.get_turning_angle_difference(axle_index, side, 'before') or '0'}"
+    turning_angle_difference_after   = f"{vehicle_data.get_turning_angle_difference(axle_index, side, 'after') or '0'}"
     
     table_data = [
         [Paragraph(headers[0], center_style), Paragraph(headers[1], center_style), Paragraph(headers[2], center_style)],
@@ -65,12 +65,12 @@ def creatTableFixedWheelParams(vehicle_data: VehicleAlignmentData, axle_index: i
     operations = ["Развал", "Сдвиг оси", "Перекос оси"]
     headers = ["До", "Операция", "После"]
 
-    camber_before = f"{vehicle_data.get_camber(axle_index, side, "before") or '-'}"
-    camber_after = f"{vehicle_data.get_camber(axle_index, side, "after") or '-'}"
-    axel_shift_before = f"{vehicle_data.get_axel_shift(axle_index, side, "before") or '-'}"
-    axel_shift_after = f"{vehicle_data.get_axel_shift(axle_index, side, "after") or '-'}"
-    axle_twist_before = f"{vehicle_data.get_axle_twist(axle_index, side, "before") or '-'}"
-    axle_twist_after = f"{vehicle_data.get_axle_twist(axle_index, side, "after") or '-'}"
+    camber_before = f"{vehicle_data.get_camber(axle_index, side, "before") or '0'}"
+    camber_after = f"{vehicle_data.get_camber(axle_index, side, "after") or '0'}"
+    axel_shift_before = f"{vehicle_data.get_axel_shift(axle_index, side, "before") or '0'}"
+    axel_shift_after = f"{vehicle_data.get_axel_shift(axle_index, side, "after") or '0'}"
+    axle_twist_before = f"{vehicle_data.get_axle_twist(axle_index, side, "before") or '0'}"
+    axle_twist_after = f"{vehicle_data.get_axle_twist(axle_index, side, "after") or '0'}"
 
     table_data = list()
     table_data.append([Paragraph(headers[0], center_style), Paragraph(headers[1], center_style), Paragraph(headers[2], center_style)])
@@ -111,8 +111,8 @@ def CreateMiddlePositionSteeringWheelTable(vehicle_data: VehicleAlignmentData, w
     headers = ["До", "Операция", "После"]
 
     # Значения
-    val_before = f"{vehicle_data.get_middle_position_steering_wheel("before") or "-"}"
-    val_after = f"{vehicle_data.get_middle_position_steering_wheel("after") or "-"}"
+    val_before = f"{vehicle_data.get_middle_position_steering_wheel("before") or '0'}"
+    val_after = f"{vehicle_data.get_middle_position_steering_wheel("after") or '0'}"
 
     table_data = list()
     table_data.append([Paragraph(headers[0], center_style), Paragraph(headers[1], center_style), Paragraph(headers[2], center_style)])
@@ -148,10 +148,11 @@ def creatTotalToeTable(vehicle_data: VehicleAlignmentData, axel_index: int, plac
     operations = ["Общее схождение оси"]
     headers = ["До", "После"]
 
-    val_before = f"{vehicle_data.get_total_toe(axel_index, "before") or "-"}"
-    val_after = f"{vehicle_data.get_total_toe(axel_index, "after") or "-"}"
+    val_before = f"{vehicle_data.get_total_toe(axel_index, "before") or '0'}"
+    val_after = f"{vehicle_data.get_total_toe(axel_index, "after") or '0'}"
 
     table_data = [
+        [Paragraph(operations[0], center_style), ""],
         [Paragraph(headers[0], center_style), Paragraph(headers[1], center_style)],
         [Paragraph(val_before, center_style), Paragraph(val_after, center_style)]
     ]
@@ -169,6 +170,7 @@ def creatTotalToeTable(vehicle_data: VehicleAlignmentData, axel_index: int, plac
         ('BOTTOMPADDING', (0,0), (-1,-1), 3),
         ('LEFTPADDING', (0,0), (-1,-1), 1),
         ('RIGHTPADDING', (0,0), (-1,-1), 1),
+        ('SPAN', (0, 0), (1, 0)),
     ]))
 
     return table

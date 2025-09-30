@@ -78,14 +78,7 @@ class Truck2Axel(Flowable):
         table_y = 70
         self.table_axel2_r.wrapOn(self.canv, table_w, table_h)
         self.table_axel2_r.drawOn(self.canv, table_x, table_y)
-
-        # Надпись по центру сверху
-        self.canv.setFont("DejaVu", 10)   # шрифт и размер
-        self.canv.setFillColor(colors.black)  # цвет текста
-        text_x = self.width / 2
-        text_y = self.height - 45 - self.SteeringWheel.wrap(self.width, self.height)[1]
-        self.canv.drawCentredString(text_x, text_y, "Общее схождение оси:")
-
+        
         # Таблицы суммарного схождения
         table_w, table_h = self.toe_table_axel1.wrap(self.width, self.height)
         table_x = (self.width - table_w) / 2 - 3 

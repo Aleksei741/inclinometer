@@ -106,7 +106,6 @@ class Truck3Axel(Flowable):
         self.canv.setFillColor(colors.black)  # цвет текста
         text_x = self.width / 2
         text_y = self.height - 15 - self.SteeringWheel.wrap(self.width, self.height)[1]
-        self.canv.drawCentredString(text_x, text_y, "Общее схождение оси:")
 
         # Таблицы суммарного схождения
         # Ось 1
@@ -119,14 +118,14 @@ class Truck3Axel(Flowable):
         # Ось 2
         table_w, table_h = self.toe_table_axel2.wrap(self.width, self.height)
         table_x = (self.width - table_w) / 2 - 3
-        table_y = 135
+        table_y = 130
         self.toe_table_axel2.wrapOn(self.canv, table_w, table_h)
         self.toe_table_axel2.drawOn(self.canv, table_x, table_y)
 
         # Ось 3
         table_w, table_h = self.toe_table_axel3.wrap(self.width, self.height)
         table_x = (self.width - table_w) / 2 - 3
-        table_y = 55
+        table_y = 50
         self.toe_table_axel3.wrapOn(self.canv, table_w, table_h)
         self.toe_table_axel3.drawOn(self.canv, table_x, table_y)
         

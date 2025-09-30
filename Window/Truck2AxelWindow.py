@@ -11,11 +11,7 @@ class Truck2AxelWindow(CarFrame):
         main_frame.pack(pady=0, padx=0)
 
         # ----------- Спинбокс "Среднее положение рулевого колеса" -----------
-        tk.Label(main_frame, text="Среднее положение рулевого колеса", font=("Arial", 10, "bold")).grid(row=0, column=1, pady=0)
         self.creatTableMiddlePositionSteeringWheel(main_frame).grid(row=1, column=1, pady=0)
-
-        # ----------- Надпись "Общее схождение" -----------
-        tk.Label(main_frame, text="Общее схождение оси:", font=("Arial", 10, "bold")).grid(row=2, column=1, pady=0)
 
         # ----------- Картинка шасси -----------
         self.img = tk.PhotoImage(file="img/TRUCK_2_AXLE.png")
@@ -36,6 +32,6 @@ class Truck2AxelWindow(CarFrame):
 
         # ----------- Спинбоксы "Общее схождение" поверх картинки -----------
         # Передня ось
-        self.creatTableTotalToe(main_frame, 0).grid(row=3, column=1, padx=1)
+        self.creatTableTotalToe(main_frame, 0).grid(row=3, column=1, padx=1, pady=(45,0), sticky="n")
         # Задняя ось
         self.creatTableTotalToe(main_frame, 1).grid(row=5, column=1, padx=1, sticky="s")

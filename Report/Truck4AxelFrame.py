@@ -108,25 +108,18 @@ class Truck4Axel(Flowable):
         self.table_axel4_r.wrapOn(self.canv, table_w, table_h)
         self.table_axel4_r.drawOn(self.canv, table_x, table_y)
 
-        # Надпись по центру сверху
-        self.canv.setFont("DejaVu", 10)   # шрифт и размер
-        self.canv.setFillColor(colors.black)  # цвет текста
-        text_x = self.width / 2
-        text_y = self.height - 25
-        self.canv.drawCentredString(text_x, text_y, "Общее схождение оси:")
-
         # Таблицы суммарного схождения
         # Ось 1
         table_w, table_h = self.toe_table_axel1.wrap(self.width, self.height)
         table_x = (self.width - table_w) / 2 - 3 
-        table_y = self.height - 100
+        table_y = self.height - 105
         self.toe_table_axel1.wrapOn(self.canv, table_w, table_h)
         self.toe_table_axel1.drawOn(self.canv, table_x, table_y)
 
         # Ось 2
         table_w, table_h = self.toe_table_axel2.wrap(self.width, self.height)
         table_x = (self.width - table_w) / 2 - 3
-        table_y = self.height - 175
+        table_y = self.height - 180
         self.toe_table_axel2.wrapOn(self.canv, table_w, table_h)
         self.toe_table_axel2.drawOn(self.canv, table_x, table_y)
 
@@ -140,7 +133,7 @@ class Truck4Axel(Flowable):
         # Ось 4
         table_w, table_h = self.toe_table_axel4.wrap(self.width, self.height)
         table_x = (self.width - table_w) / 2 - 3
-        table_y = 75
+        table_y = 70
         self.toe_table_axel4.wrapOn(self.canv, table_w, table_h)
         self.toe_table_axel4.drawOn(self.canv, table_x, table_y)
         

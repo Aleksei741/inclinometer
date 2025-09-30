@@ -10,8 +10,6 @@ class Trailer2AxelWindow(CarFrame):
         main_frame = tk.Frame(master)
         main_frame.pack(pady=0, padx=0)
 
-        tk.Label(main_frame, text="Общее схождение:", font=("Arial", 12, "bold")).grid(row=0, column=1, pady=0)
-
         # ----------- Картинка шасси -----------
         self.img = tk.PhotoImage(file="img/TRAILER_2_AXLE.png")
         tk.Label(main_frame, image=self.img).grid(row=1, column=1, rowspan=7, columnspan=1)

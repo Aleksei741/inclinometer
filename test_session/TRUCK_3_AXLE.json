@@ -1,0 +1,92 @@
+{
+    "truck_body_type": "TRUCK_3_AXLE",
+    "company_name": "company_name TRUCK_3_AXLE",
+    "address": "test address TRUCK_3_AXLE",
+    "phone": "123456789",
+    "car_brand": "TOTOYO",
+    "model": "model TRUCK_3_AXLE",
+    "chassis_number": "CH123456789",
+    "mileage": 120000,
+    "reg_number": "AB123CD",
+    "owner": "John Doe",
+    "middle_position_steering_wheel_before": -0.03,
+    "middle_position_steering_wheel_after": 0.0,
+    "steerable_axles": [
+        {
+            "left_wheel": {
+                "presure": 2.4,
+                "camber_before": -0.01,
+                "camber_after": 0.01,
+                "toe_before": 0.05,
+                "toe_after": 0.02,
+                "caster_angle_before": 1.0,
+                "caster_angle_after": 0.8,
+                "steering_axis_inclination_before": 5.0,
+                "steering_axis_inclination_after": 5.1,
+                "turning_angle_difference_before": 0.1,
+                "turning_angle_difference_after": 0.0
+            },
+            "right_wheel": {
+                "presure": 2.3,
+                "camber_before": -0.02,
+                "camber_after": 0.0,
+                "toe_before": 0.04,
+                "toe_after": 0.03,
+                "caster_angle_before": 0.9,
+                "caster_angle_after": 0.85,
+                "steering_axis_inclination_before": 5.0,
+                "steering_axis_inclination_after": 5.1,
+                "turning_angle_difference_before": 0.1,
+                "turning_angle_difference_after": 0.0
+            },
+            "total_toe_before": 0.09,
+            "total_toe_after": 0.05
+        }
+    ],
+    "fixed_axles": [
+        {
+            "left_wheel": {
+                "presure": 2.6,
+                "camber_before": -0.05,
+                "camber_after": 0.03,
+                "axel_shift_before": -0.04,
+                "axel_shift_after": 0.06,
+                "axle_twist_before": 0.0,
+                "axle_twist_after": 0.0
+            },
+            "right_wheel": {
+                "presure": 2.5,
+                "camber_before": -0.03,
+                "camber_after": -0.08,
+                "axel_shift_before": 0.0,
+                "axel_shift_after": 0.0,
+                "axle_twist_before": -0.04,
+                "axle_twist_after": 0.05
+            },
+            "total_toe_before": -0.03,
+            "total_toe_after": 0.03
+        },
+        {
+            "left_wheel": {
+                "presure": 2.8,
+                "camber_before": -0.01,
+                "camber_after": 0.05,
+                "axel_shift_before": -0.02,
+                "axel_shift_after": 0.04,
+                "axle_twist_before": 0.0,
+                "axle_twist_after": 0.0
+            },
+            "right_wheel": {
+                "presure": 2.7,
+                "camber_before": -0.01,
+                "camber_after": 0.03,
+                "axel_shift_before": 0.0,
+                "axel_shift_after": 0.0,
+                "axle_twist_before": -0.02,
+                "axle_twist_after": 0.04
+            },
+            "total_toe_before": 0.02,
+            "total_toe_after": -0.03
+        }
+    ]
+}

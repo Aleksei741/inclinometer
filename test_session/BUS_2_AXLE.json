@@ -1,0 +1,70 @@
+{
+    "truck_body_type": "BUS_2_AXLE",
+    "company_name": "City Transport Co.",
+    "address": "456 Central Avenue",
+    "phone": "9876543210",
+    "car_brand": "Mercedes",
+    "model": "Sprinter",
+    "chassis_number": "BUS12345678",
+    "mileage": 75000,
+    "reg_number": "BUS5678",
+    "owner": "Alexey Ivanov",
+    "middle_position_steering_wheel_before": 0.0,
+    "middle_position_steering_wheel_after": 0.0,
+    "steerable_axles": [
+        {
+            "left_wheel": {
+                "presure": 2.4,
+                "camber_before": -0.05,
+                "camber_after": 0.0,
+                "toe_before": 0.03,
+                "toe_after": 0.0,
+                "caster_angle_before": 1.5,
+                "caster_angle_after": 1.5,
+                "steering_axis_inclination_before": 2.0,
+                "steering_axis_inclination_after": 2.0,
+                "turning_angle_difference_before": 0.1,
+                "turning_angle_difference_after": 0.0
+            },
+            "right_wheel": {
+                "presure": 2.0,
+                "camber_before": -0.04,
+                "camber_after": 0.0,
+                "toe_before": 0.03,
+                "toe_after": 0.0,
+                "caster_angle_before": 1.5,
+                "caster_angle_after": 1.5,
+                "steering_axis_inclination_before": 2.0,
+                "steering_axis_inclination_after": 2.0,
+                "turning_angle_difference_before": 0.1,
+                "turning_angle_difference_after": 0.0
+            },
+            "total_toe_before": 0.06,
+            "total_toe_after": 0.0
+        }
+    ],
+    "fixed_axles": [
+        {
+            "left_wheel": {
+                "presure": 1.9,
+                "camber_before": -0.02,
+                "camber_after": 0.0,
+                "axel_shift_before": 0.05,
+                "axel_shift_after": 0.0,
+                "axle_twist_before": 0.02,
+                "axle_twist_after": 0.0
+            },
+            "right_wheel": {
+                "presure": 2.4,
+                "camber_before": -0.01,
+                "camber_after": 0.0,
+                "axel_shift_before": 0.05,
+                "axel_shift_after": 0.0,
+                "axle_twist_before": 0.02,
+                "axle_twist_after": 0.0
+            },
+            "total_toe_before": 0.05,
+            "total_toe_after": 0.0
+        }
+    ]
+}

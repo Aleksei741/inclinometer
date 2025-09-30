@@ -1,0 +1,39 @@
+{
+    "truck_body_type": "TRAILER_1_AXLE",
+    "company_name": "Fast Logistics TRAILER_1_AXLE",
+    "address": "456 Cargo Ave.",
+    "phone": "+9876543210",
+    "car_brand": "HaulMaster",
+    "model": "HX-1",
+    "chassis_number": "TR-AX1001",
+    "mileage": 15300,
+    "reg_number": "TR-AX01",
+    "owner": "Transport Co.",
+    "middle_position_steering_wheel_before": 0.2,
+    "middle_position_steering_wheel_after": 0.1,
+    "steerable_axles": [],
+    "fixed_axles": [
+        {
+            "left_wheel": {
+                "presure": 2.5,
+                "camber_before": -0.3,
+                "camber_after": -0.1,
+                "axel_shift_before": 0.4,
+                "axel_shift_after": 0.2,
+                "axle_twist_before": 0.1,
+                "axle_twist_after": 0.0
+            },
+            "right_wheel": {
+                "presure": 2.4,
+                "camber_before": -0.2,
+                "camber_after": 0.0,
+                "axel_shift_before": 0.3,
+                "axel_shift_after": 0.1,
+                "axle_twist_before": 0.0,
+                "axle_twist_after": -0.1
+            },
+            "total_toe_before": 0.5,
+            "total_toe_after": 0.2
+        }
+    ]
+}

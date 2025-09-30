@@ -56,13 +56,6 @@ class Trailer1Axel(Flowable):
         self.table_axel1_r.wrapOn(self.canv, table_w, table_h)
         self.table_axel1_r.drawOn(self.canv, table_x, table_y)
 
-        # Надпись по центру сверху
-        self.canv.setFont("DejaVu", 12)   # шрифт и размер
-        self.canv.setFillColor(colors.black)  # цвет текста
-        text_x = self.width / 2
-        text_y = self.height - 40
-        self.canv.drawCentredString(text_x, text_y, "Общее схождение оси:")
-
         # Таблицы суммарного схождения
         # Ось 1
         table_w, table_h = self.toe_table_axel1.wrap(self.width, self.height)

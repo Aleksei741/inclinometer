@@ -1,0 +1,70 @@
+{
+    "truck_body_type": "MINIBUS",
+    "company_name": "CityTrans MINIBUS",
+    "address": "12 Main Street",
+    "phone": "+9876543210",
+    "car_brand": "MiniMove",
+    "model": "M-2025",
+    "chassis_number": "MB-AX1001",
+    "mileage": 15230,
+    "reg_number": "MIN-01",
+    "owner": "Urban Transport Ltd",
+    "middle_position_steering_wheel_before": 1.7,
+    "middle_position_steering_wheel_after": 1.5,
+    "steerable_axles": [
+        {
+            "left_wheel": {
+                "presure": 2.3,
+                "camber_before": 1.2,
+                "camber_after": 1.1,
+                "toe_before": 1.3,
+                "toe_after": 1.2,
+                "caster_angle_before": 1.4,
+                "caster_angle_after": 1.3,
+                "steering_axis_inclination_before": 1.2,
+                "steering_axis_inclination_after": 1.1,
+                "turning_angle_difference_before": 1.5,
+                "turning_angle_difference_after": 1.3
+            },
+            "right_wheel": {
+                "presure": 2.3,
+                "camber_before": 1.1,
+                "camber_after": 1.0,
+                "toe_before": 1.2,
+                "toe_after": 1.1,
+                "caster_angle_before": 1.3,
+                "caster_angle_after": 1.2,
+                "steering_axis_inclination_before": 1.1,
+                "steering_axis_inclination_after": 1.0,
+                "turning_angle_difference_before": 1.4,
+                "turning_angle_difference_after": 1.2
+            },
+            "total_toe_before": 1.6,
+            "total_toe_after": 1.4
+        }
+    ],
+    "fixed_axles": [
+        {
+            "left_wheel": {
+                "presure": 2.4,
+                "camber_before": 1.2,
+                "camber_after": 1.1,
+                "axel_shift_before": 1.3,
+                "axel_shift_after": 1.2,
+                "axle_twist_before": 1.1,
+                "axle_twist_after": 1.2
+            },
+            "right_wheel": {
+                "presure": 2.4,
+                "camber_before": 1.1,
+                "camber_after": 1.0,
+                "axel_shift_before": 1.2,
+                "axel_shift_after": 1.1,
+                "axle_twist_before": 1.0,
+                "axle_twist_after": 1.1
+            },
+            "total_toe_before": 1.5,
+            "total_toe_after": 1.3
+        }
+    ]
+}

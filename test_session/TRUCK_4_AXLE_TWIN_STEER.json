@@ -1,0 +1,122 @@
+{
+    "truck_body_type": "TRUCK_4_AXLE_TWIN_STEER",
+    "company_name": "Company ABC",
+    "address": "123 Main Street",
+    "phone": "1234567890",
+    "car_brand": "Volvo",
+    "model": "FH16",
+    "chassis_number": "CHS123456789",
+    "mileage": 120000,
+    "reg_number": "XYZ1234",
+    "owner": "Ivan Petrov",
+    "middle_position_steering_wheel_before": 0.0,
+    "middle_position_steering_wheel_after": 0.0,
+    "steerable_axles": [
+        {
+            "left_wheel": {
+                "presure": 2.5,
+                "camber_before": -0.1,
+                "camber_after": 0.0,
+                "toe_before": 0.05,
+                "toe_after": 0.0,
+                "caster_angle_before": 1.5,
+                "caster_angle_after": 1.7,
+                "steering_axis_inclination_before": 2.0,
+                "steering_axis_inclination_after": 2.0,
+                "turning_angle_difference_before": 0.3,
+                "turning_angle_difference_after": 0.0
+            },
+            "right_wheel": {
+                "presure": 2.3,
+                "camber_before": -0.05,
+                "camber_after": 0.0,
+                "toe_before": 0.04,
+                "toe_after": 0.0,
+                "caster_angle_before": 1.6,
+                "caster_angle_after": 1.7,
+                "steering_axis_inclination_before": 2.0,
+                "steering_axis_inclination_after": 2.0,
+                "turning_angle_difference_before": 0.2,
+                "turning_angle_difference_after": 0.0
+            },
+            "total_toe_before": 0.09,
+            "total_toe_after": 0.0
+        },
+        {
+            "left_wheel": {
+                "presure": 2.4,
+                "camber_before": -0.08,
+                "camber_after": 0.0,
+                "toe_before": 0.03,
+                "toe_after": 0.0,
+                "caster_angle_before": 1.4,
+                "caster_angle_after": 1.5,
+                "steering_axis_inclination_before": 2.0,
+                "steering_axis_inclination_after": 2.0,
+                "turning_angle_difference_before": 0.25,
+                "turning_angle_difference_after": 0.0
+            },
+            "right_wheel": {
+                "presure": 2.4,
+                "camber_before": -0.07,
+                "camber_after": 0.0,
+                "toe_before": 0.03,
+                "toe_after": 0.0,
+                "caster_angle_before": 1.5,
+                "caster_angle_after": 1.5,
+                "steering_axis_inclination_before": 2.0,
+                "steering_axis_inclination_after": 2.0,
+                "turning_angle_difference_before": 0.2,
+                "turning_angle_difference_after": 0.0
+            },
+            "total_toe_before": 0.06,
+            "total_toe_after": 0.0
+        }
+    ],
+    "fixed_axles": [
+        {
+            "left_wheel": {
+                "presure": 2.5,
+                "camber_before": -0.02,
+                "camber_after": 0.0,
+                "axel_shift_before": 0.1,
+                "axel_shift_after": 0.0,
+                "axle_twist_before": 0.05,
+                "axle_twist_after": 0.0
+            },
+            "right_wheel": {
+                "presure": 2.5,
+                "camber_before": -0.01,
+                "camber_after": 0.0,
+                "axel_shift_before": 0.1,
+                "axel_shift_after": 0.0,
+                "axle_twist_before": 0.04,
+                "axle_twist_after": 0.0
+            },
+            "total_toe_before": 0.1,
+            "total_toe_after": 0.0
+        },
+        {
+            "left_wheel": {
+                "presure": 2.6,
+                "camber_before": -0.03,
+                "camber_after": 0.0,
+                "axel_shift_before": 0.08,
+                "axel_shift_after": 0.0,
+                "axle_twist_before": 0.03,
+                "axle_twist_after": 0.0
+            },
+            "right_wheel": {
+                "presure": 2.4,
+                "camber_before": -0.02,
+                "camber_after": 0.0,
+                "axel_shift_before": 0.08,
+                "axel_shift_after": 0.0,
+                "axle_twist_before": 0.03,
+                "axle_twist_after": 0.0
+            },
+            "total_toe_before": 0.08,
+            "total_toe_after": 0.0
+        }
+    ]
+}

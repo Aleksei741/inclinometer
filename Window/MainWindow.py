@@ -1,7 +1,9 @@
 ﻿import asyncio
+from datetime import datetime
 import tkinter as tk
 from tkinter import ttk
 from tkinter import messagebox
+from tkinter import filedialog
 from Truck import VehicleAlignmentData, TruckBodyType
 from BLE import BLEApp
 from Window.ConnectWindow import ConnectWindow
@@ -16,10 +18,21 @@ from Report import save_to_pdf
 
 
 class MainWindow(tk.Tk):
-    def __init__(self, vehicle_data: VehicleAlignmentData):
+    def __init__(self, vehicle_data: VehicleAlignmentData = None):
         super().__init__()
 
-        self.vehicle_data = vehicle_data
+        # Данные
+        if not vehicle_data:
+            self.vehicle_data = VehicleAlignmentData(TruckBodyType.TRUCK_2_AXLE)
+        else:
+            self.vehicle_data = vehicle_data
+
+        self.protocol(
+            "WM_DELETE_WINDOW",
+            lambda: (self.vehicle_data.save_to_file("vehicle_data.json"), self.destroy())
+        )
+        
+        #BLE
         self.ble = BLEApp()
  
         self.title("Диагностика автомобиля")
@@ -58,7 +71,7 @@ class MainWindow(tk.Tk):
         tk.Button(button_frame, text="Сохранить отчет (PDF)", command=self.save_pdf).pack(side="left", padx=5)
         tk.Button(button_frame, text="Сохранить сессию", command=self.save_session).pack(side="left", padx=5)
         tk.Button(button_frame, text="Открыть сессию", command=self.load_session).pack(side="left", padx=5)
-
+    
         # ---------- Данные компании ----------
         company_frame = ttk.LabelFrame(self.scrollable_frame, text="Данные компании")
         company_frame.pack(fill="x", padx=10, pady=5)
@@ -70,7 +83,7 @@ class MainWindow(tk.Tk):
         # ---------- Данные автомобиля ----------
         car_frame = ttk.LabelFrame(self.scrollable_frame, text="Данные автомобиля")
         car_frame.pack(fill="x", padx=10, pady=5)
-
+        
         self.car_brand = self._add_labeled_entry(car_frame, "Марка авто:", self.vehicle_data.get_car_brand(), 0, 0, 50, self.on_car_update)
         self.car_model = self._add_labeled_entry(car_frame, "Модель:", self.vehicle_data.get_model(), 1, 0, 50, self.on_car_update)
         self.car_chassis = self._add_labeled_entry(car_frame, "№ шасси:", self.vehicle_data.get_chassis_number(), 2, 0, 50, self.on_car_update)
@@ -84,6 +97,8 @@ class MainWindow(tk.Tk):
         self.car_tires = tk.Frame(car_frame)
         self.car_tires.grid(row=2, column=3, rowspan=2, padx=5, pady=2)
         self.tire_vars = []
+
+        self._flag_car_and_company_update = True
 
         # Настройка сетки (чтобы оба столбца растягивались)
         car_frame.columnconfigure(1, weight=1)
@@ -107,9 +122,41 @@ class MainWindow(tk.Tk):
         entry.grid(row=row, column=col + 1, sticky="w", padx=5, pady=2)
 
         var.trace_add("write", lambda *args: callback(text, var.get()))
-        return var
+        return entry
  
     # ---------- методы обновления рабочей области ----------
+    def update_company_and_car_fields(self):
+        self._flag_car_and_company_update = False
+        # ---------- Данные компании ----------
+        self.company_name.delete(0, tk.END)
+        self.company_name.insert(0, self.vehicle_data.get_company_name() or "")
+
+        self.company_address.delete(0, tk.END)
+        self.company_address.insert(0, self.vehicle_data.get_address() or "")
+
+        self.company_phone.delete(0, tk.END)
+        self.company_phone.insert(0, self.vehicle_data.get_phone() or "")
+
+        # ---------- Данные автомобиля ----------
+        self.car_brand.delete(0, tk.END)
+        self.car_brand.insert(0, self.vehicle_data.get_car_brand() or "")
+
+        self.car_model.delete(0, tk.END)
+        self.car_model.insert(0, self.vehicle_data.get_model() or "")
+
+        self.car_chassis.delete(0, tk.END)
+        self.car_chassis.insert(0, self.vehicle_data.get_chassis_number() or "")
+
+        self.car_mileage.delete(0, tk.END)
+        self.car_mileage.insert(0, self.vehicle_data.get_mileage() or "")
+
+        self.car_regnum.delete(0, tk.END)
+        self.car_regnum.insert(0, self.vehicle_data.get_reg_number() or "")
+
+        self.car_owner.delete(0, tk.END)
+        self.car_owner.insert(0, self.vehicle_data.get_owner() or "")
+        self._flag_car_and_company_update = True
+
     def ubdate_truck_scheme(self):
         """Меняем кузов и пересоздаём поля шин"""
         self._update_tire_fields()
@@ -199,6 +246,9 @@ class MainWindow(tk.Tk):
             print("Ошибка при обновлении давления:", e)
 
     def on_company_update(self, field, value):
+        if not self._flag_car_and_company_update:
+            return
+        
         if( field == "Наименование компании:"):
             self.vehicle_data.set_company_name(value)
         elif( field == "Адрес:"):
@@ -207,6 +257,9 @@ class MainWindow(tk.Tk):
             self.vehicle_data.set_phone(value)        
 
     def on_car_update(self, field, value):
+        if not self._flag_car_and_company_update:
+            return
+        
         if field == "Марка авто:":
             self.vehicle_data.set_car_brand(value)
         elif field == "Модель:":
@@ -226,8 +279,8 @@ class MainWindow(tk.Tk):
         win.grab_set()
         self.wait_window(win)
 
-        #if self.ble.is_connected():
-        self.read_button.config(state=tk.NORMAL)
+        if self.ble.is_connected():
+            self.read_button.config(state=tk.NORMAL)
 
     def load_data(self):
         print("Загрузка данных с прибора")
@@ -241,19 +294,73 @@ class MainWindow(tk.Tk):
             except Exception as e:
                 messagebox.showerror("Ошибка чтения", str(e))
 
-        asyncio.run(run_read())
-        
+        asyncio.run(run_read())        
         self.ubdate_truck_scheme()
 
     def save_pdf(self):
         print("Сохранение отчета в PDF")
+        company = self.vehicle_data.get_company_name()
+        if not company:
+            messagebox.showerror("Ошибка", "Введите имя компании")
+            return
+        
+        today = datetime.today().strftime("%Y-%m-%d")
+        default_filename = f"{today}_{company}.pdf"
+
         try:
-            save_to_pdf(self.vehicle_data, "report.pdf")
+            # Диалог выбора пути и имени файла
+            file_path = filedialog.asksaveasfilename(
+                defaultextension=".pdf",
+                filetypes=[("PDF files", "*.pdf")],
+                title="Сохранить отчет как...",
+                initialfile=default_filename
+            )
+            if file_path:  # если пользователь не отменил
+                save_to_pdf(self.vehicle_data, file_path)
         except Exception as e:
             messagebox.showerror("Ошибка сохранения PDF", str(e))
 
     def save_session(self):
-        print("Сохранение сессии...")
+        print("Сохранение сессии")        
+        company = self.vehicle_data.get_company_name()
+        if not company:
+            messagebox.showerror("Ошибка", "Введите имя компании")
+            return
+
+        today = datetime.today().strftime("%Y-%m-%d")
+        default_filename = f"{today}_{company}.json"
+
+        # Окно выбора пути
+        filepath = filedialog.asksaveasfilename(
+            title="Сохранение сессии",
+            defaultextension=".json",
+            filetypes=[("JSON files", "*.json")],
+            initialfile=default_filename
+        )
+
+        if not filepath:  # Пользователь нажал "Отмена"
+            return
+        
+        # Сохраняем данные в выбранный файл
+        self.vehicle_data.save_to_file(filepath)
+        print(f"Сессия сохранена в {filepath}")
 
     def load_session(self):
-        print("Открытие сессии...")
+        print("Открытие сессии")
+        filepath = filedialog.askopenfilename(
+            title="Открыть сессию",
+            filetypes=[("JSON files", "*.json")],
+            defaultextension=".json"
+            )
+
+        if not filepath:  # если пользователь нажал "Отмена"
+            return
+
+        try:
+            self.vehicle_data = self.vehicle_data.load_from_file(filepath)
+            print(f"Сессия загружена: {filepath}")
+            self.ubdate_truck_scheme()
+            self.update_company_and_car_fields()
+        except Exception as e:
+            messagebox.showerror("Ошибка", f"Не удалось загрузить сессию:\n{e}")
+            print(f"Ошибка загрузки: {e}")
