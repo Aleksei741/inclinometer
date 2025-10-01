@@ -1,5 +1,6 @@
 ﻿import asyncio
 from datetime import datetime
+import threading
 import tkinter as tk
 from tkinter import ttk
 from tkinter import messagebox
@@ -21,18 +22,8 @@ class MainWindow(tk.Tk):
     def __init__(self, vehicle_data: VehicleAlignmentData = None):
         super().__init__()
 
-        # Данные
-        if not vehicle_data:
-            self.vehicle_data = VehicleAlignmentData(TruckBodyType.TRUCK_2_AXLE)
-        else:
-            self.vehicle_data = vehicle_data
-
-        self.protocol(
-            "WM_DELETE_WINDOW",
-            lambda: (self.vehicle_data.save_to_file("vehicle_data.json"), self.destroy())
-        )
-        
-        #BLE
+        # Данные, BLE
+        self.vehicle_data = vehicle_data or VehicleAlignmentData()
         self.ble = BLEApp()
  
         self.title("Диагностика автомобиля")
@@ -52,13 +43,7 @@ class MainWindow(tk.Tk):
 
         # Внутренний фрейм, в который помещается всё содержимое
         self.scrollable_frame = tk.Frame(canvas)
-
-        # Обновляем scrollregion при изменении размеров
-        self.scrollable_frame.bind(
-            "<Configure>",
-            lambda e: canvas.configure(scrollregion=canvas.bbox("all"))
-        )
-
+        self.scrollable_frame.bind("<Configure>", lambda e: canvas.configure(scrollregion=canvas.bbox("all")))
         canvas.create_window((0, 0), window=self.scrollable_frame, anchor="nw")
 
         # ---------- Кнопки ----------
@@ -108,7 +93,9 @@ class MainWindow(tk.Tk):
         self.scheme_frame = ttk.LabelFrame(self.scrollable_frame, text="Схема автомобиля и сход-развал")
         self.scheme_frame.pack(fill="both", expand=True, padx=10, pady=5)
 
-        self.ubdate_truck_scheme()
+        self.truck_window = None
+        if self.vehicle_data.body_type:
+            self.ubdate_truck_scheme()
 
     # ---------- Вспомогательные методы ----------
     def _add_labeled_entry(self, parent, text, value, row, col, width, callback):
@@ -123,45 +110,7 @@ class MainWindow(tk.Tk):
 
         var.trace_add("write", lambda *args: callback(text, var.get()))
         return entry
- 
-    # ---------- методы обновления рабочей области ----------
-    def update_company_and_car_fields(self):
-        self._flag_car_and_company_update = False
-        # ---------- Данные компании ----------
-        self.company_name.delete(0, tk.END)
-        self.company_name.insert(0, self.vehicle_data.get_company_name() or "")
-
-        self.company_address.delete(0, tk.END)
-        self.company_address.insert(0, self.vehicle_data.get_address() or "")
-
-        self.company_phone.delete(0, tk.END)
-        self.company_phone.insert(0, self.vehicle_data.get_phone() or "")
-
-        # ---------- Данные автомобиля ----------
-        self.car_brand.delete(0, tk.END)
-        self.car_brand.insert(0, self.vehicle_data.get_car_brand() or "")
-
-        self.car_model.delete(0, tk.END)
-        self.car_model.insert(0, self.vehicle_data.get_model() or "")
-
-        self.car_chassis.delete(0, tk.END)
-        self.car_chassis.insert(0, self.vehicle_data.get_chassis_number() or "")
-
-        self.car_mileage.delete(0, tk.END)
-        self.car_mileage.insert(0, self.vehicle_data.get_mileage() or "")
-
-        self.car_regnum.delete(0, tk.END)
-        self.car_regnum.insert(0, self.vehicle_data.get_reg_number() or "")
-
-        self.car_owner.delete(0, tk.END)
-        self.car_owner.insert(0, self.vehicle_data.get_owner() or "")
-        self._flag_car_and_company_update = True
-
-    def ubdate_truck_scheme(self):
-        """Меняем кузов и пересоздаём поля шин"""
-        self._update_tire_fields()
-        self._update_scheme_fields()
-
+    
     def _update_tire_fields(self):
         """Обновить количество полей шин в зависимости от TruckBodyType"""
         # Удаляем старые виджеты
@@ -204,38 +153,82 @@ class MainWindow(tk.Tk):
 
     def _update_scheme_fields(self):
         """ Обновить схему автомобиля """
-        # Удаляем старые виджеты
-        for widget in self.scheme_frame.winfo_children():
-            widget.destroy()
-
-        if self.vehicle_data.body_type == TruckBodyType.TRUCK_2_AXLE:
-            self.truck_window = Truck2AxelWindow(self.scheme_frame, self.vehicle_data)
-        elif self.vehicle_data.body_type == TruckBodyType.TRUCK_3_AXLE:
-            self.truck_window = Truck3AxelWindow(self.scheme_frame, self.vehicle_data)
-        elif self.vehicle_data.body_type == TruckBodyType.TRUCK_4_AXLE_TWIN_STEER:
-            self.truck_window = Truck4AxelWindow(self.scheme_frame, self.vehicle_data)
-        elif self.vehicle_data.body_type == TruckBodyType.BUS_2_AXLE:
-            self.truck_window = Truck2AxelWindow(self.scheme_frame, self.vehicle_data)
-        elif self.vehicle_data.body_type == TruckBodyType.BUS_3_AXLE:
-            self.truck_window = Truck3AxelWindow(self.scheme_frame, self.vehicle_data)
-        elif self.vehicle_data.body_type == TruckBodyType.TRAILER_1_AXLE:
-            self.truck_window = Trailer1AxelWindow(self.scheme_frame, self.vehicle_data)
-        elif self.vehicle_data.body_type == TruckBodyType.TRAILER_2_AXLE:
-            self.truck_window = Trailer2AxelWindow(self.scheme_frame, self.vehicle_data)
-        elif self.vehicle_data.body_type == TruckBodyType.TRAILER_3_AXLE:
-            self.truck_window = Trailer3AxelWindow(self.scheme_frame, self.vehicle_data)
-        elif self.vehicle_data.body_type == TruckBodyType.RIGID_TRAILER_2_AXLE:
-            self.truck_window = RigidTrailer2AxelWindow(self.scheme_frame, self.vehicle_data)
-        elif self.vehicle_data.body_type == TruckBodyType.MINIBUS:
-            self.truck_window = Truck2AxelWindow(self.scheme_frame, self.vehicle_data)
+        if not self.vehicle_data.body_type:
+            return
         
+        # Если тип кузова одинаковый не перерисовываем, а посто обновляем
+        if self.truck_window and self.truck_window.body_type == self.vehicle_data.body_type:
+            self.truck_window.updateUIAxelParam()            
+        else:  
+            # Удаляем старые виджеты
+            for widget in self.scheme_frame.winfo_children():
+                widget.destroy()
 
-        self.truck_window.pack(fill="both", expand=True)
+            if self.vehicle_data.body_type == TruckBodyType.TRUCK_2_AXLE:
+                self.truck_window = Truck2AxelWindow(self.scheme_frame, self.vehicle_data)
+            elif self.vehicle_data.body_type == TruckBodyType.TRUCK_3_AXLE:
+                self.truck_window = Truck3AxelWindow(self.scheme_frame, self.vehicle_data)
+            elif self.vehicle_data.body_type == TruckBodyType.TRUCK_4_AXLE_TWIN_STEER:
+                self.truck_window = Truck4AxelWindow(self.scheme_frame, self.vehicle_data)
+            elif self.vehicle_data.body_type == TruckBodyType.BUS_2_AXLE:
+                self.truck_window = Truck2AxelWindow(self.scheme_frame, self.vehicle_data)
+            elif self.vehicle_data.body_type == TruckBodyType.BUS_3_AXLE:
+                self.truck_window = Truck3AxelWindow(self.scheme_frame, self.vehicle_data)
+            elif self.vehicle_data.body_type == TruckBodyType.TRAILER_1_AXLE:
+                self.truck_window = Trailer1AxelWindow(self.scheme_frame, self.vehicle_data)
+            elif self.vehicle_data.body_type == TruckBodyType.TRAILER_2_AXLE:
+                self.truck_window = Trailer2AxelWindow(self.scheme_frame, self.vehicle_data)
+            elif self.vehicle_data.body_type == TruckBodyType.TRAILER_3_AXLE:
+                self.truck_window = Trailer3AxelWindow(self.scheme_frame, self.vehicle_data)
+            elif self.vehicle_data.body_type == TruckBodyType.RIGID_TRAILER_2_AXLE:
+                self.truck_window = RigidTrailer2AxelWindow(self.scheme_frame, self.vehicle_data)
+            elif self.vehicle_data.body_type == TruckBodyType.MINIBUS:
+                self.truck_window = Truck2AxelWindow(self.scheme_frame, self.vehicle_data)
+            
+            self.truck_window.pack(fill="both", expand=True)
+ 
+    # ---------- методы обновления рабочей области ----------
+    def update_company_and_car_fields(self):
+        """Обновляем поля компании и автомобиля"""
+        self._flag_car_and_company_update = False
+        # ---------- Данные компании ----------
+        self.company_name.delete(0, tk.END)
+        self.company_name.insert(0, self.vehicle_data.get_company_name() or "")
 
+        self.company_address.delete(0, tk.END)
+        self.company_address.insert(0, self.vehicle_data.get_address() or "")
+
+        self.company_phone.delete(0, tk.END)
+        self.company_phone.insert(0, self.vehicle_data.get_phone() or "")
+
+        # ---------- Данные автомобиля ----------
+        self.car_brand.delete(0, tk.END)
+        self.car_brand.insert(0, self.vehicle_data.get_car_brand() or "")
+
+        self.car_model.delete(0, tk.END)
+        self.car_model.insert(0, self.vehicle_data.get_model() or "")
+
+        self.car_chassis.delete(0, tk.END)
+        self.car_chassis.insert(0, self.vehicle_data.get_chassis_number() or "")
+
+        self.car_mileage.delete(0, tk.END)
+        self.car_mileage.insert(0, self.vehicle_data.get_mileage() or "")
+
+        self.car_regnum.delete(0, tk.END)
+        self.car_regnum.insert(0, self.vehicle_data.get_reg_number() or "")
+
+        self.car_owner.delete(0, tk.END)
+        self.car_owner.insert(0, self.vehicle_data.get_owner() or "")
+        self._flag_car_and_company_update = True
+
+    def ubdate_truck_scheme(self):
+        """Меняем кузов и пересоздаём поля шин"""
+        self._update_tire_fields()
+        self._update_scheme_fields()
 
     # ---------- Обработчики ----------
     def on_tire_update(self, axle_index: int, side: str, var: tk.DoubleVar):
-        """Обновить данные vehicle_data при изменении давления в шине"""
+        """Обновить данные давления в шине"""
         try:
             self.vehicle_data.set_pressure(
                 axle_index=axle_index,
@@ -243,9 +236,10 @@ class MainWindow(tk.Tk):
                 value=var.get()
             )
         except Exception as e:
-            print("Ошибка при обновлении давления:", e)
+            messagebox.showerror("Ошибка", f"Обновить данные давления в шине:\n{e}")
 
     def on_company_update(self, field, value):
+        """Обновление данных компании"""
         if not self._flag_car_and_company_update:
             return
         
@@ -257,6 +251,7 @@ class MainWindow(tk.Tk):
             self.vehicle_data.set_phone(value)        
 
     def on_car_update(self, field, value):
+        """Обновление данных автомобиля"""
         if not self._flag_car_and_company_update:
             return
         
@@ -274,8 +269,9 @@ class MainWindow(tk.Tk):
             self.vehicle_data.set_owner(value)
 
     def connect_dev(self):
+        """Подключение к BLE"""
         print("Подключение к устройству")
-        win = ConnectWindow(self, self.vehicle_data, self.ble)
+        win = ConnectWindow(self, self.ble)
         win.grab_set()
         self.wait_window(win)
 
@@ -283,21 +279,26 @@ class MainWindow(tk.Tk):
             self.read_button.config(state=tk.NORMAL)
 
     def load_data(self):
+        """Загрузка данных с прибора"""
         print("Загрузка данных с прибора")
-
         if not self.ble.is_connected():
+            messagebox.showwarning("Нет подключения", "Сначала подключитесь к устройству")
             self.read_button.config(state=tk.DISABLED)
+            return
 
-        async def run_read():
+        def run():
+            future = self.ble.run_async(self.ble.read_data(self.vehicle_data))
             try:
-                self.vehicle_data = await self.ble.read_data()
+                future.result()  # ждём завершения async операции
+                self.ubdate_truck_scheme()  # обновляем схему после данных
+                messagebox.showinfo("Успех", "Данные загружены")
             except Exception as e:
                 messagebox.showerror("Ошибка чтения", str(e))
 
-        asyncio.run(run_read())        
-        self.ubdate_truck_scheme()
+        threading.Thread(target=run, daemon=True).start()
 
     def save_pdf(self):
+        """Сохранение pdf"""
         print("Сохранение отчета в PDF")
         company = self.vehicle_data.get_company_name()
         if not company:
@@ -308,19 +309,20 @@ class MainWindow(tk.Tk):
         default_filename = f"{today}_{company}.pdf"
 
         try:
-            # Диалог выбора пути и имени файла
             file_path = filedialog.asksaveasfilename(
                 defaultextension=".pdf",
                 filetypes=[("PDF files", "*.pdf")],
                 title="Сохранить отчет как...",
                 initialfile=default_filename
             )
-            if file_path:  # если пользователь не отменил
+            
+            if file_path:
                 save_to_pdf(self.vehicle_data, file_path)
         except Exception as e:
             messagebox.showerror("Ошибка сохранения PDF", str(e))
 
     def save_session(self):
+        """Сохранить сессию"""
         print("Сохранение сессии")        
         company = self.vehicle_data.get_company_name()
         if not company:
@@ -338,14 +340,14 @@ class MainWindow(tk.Tk):
             initialfile=default_filename
         )
 
-        if not filepath:  # Пользователь нажал "Отмена"
+        if not filepath:
             return
         
-        # Сохраняем данные в выбранный файл
         self.vehicle_data.save_to_file(filepath)
         print(f"Сессия сохранена в {filepath}")
 
     def load_session(self):
+        """ Загрузить сессию """
         print("Открытие сессии")
         filepath = filedialog.askopenfilename(
             title="Открыть сессию",
@@ -353,11 +355,13 @@ class MainWindow(tk.Tk):
             defaultextension=".json"
             )
 
-        if not filepath:  # если пользователь нажал "Отмена"
+        if not filepath:
             return
 
         try:
-            self.vehicle_data = self.vehicle_data.load_from_file(filepath)
+            # self.vehicle_data = self.vehicle_data.load_from_file(filepath)
+            new_data = VehicleAlignmentData.load_from_file(filepath)
+            self.vehicle_data.__dict__.update(new_data.__dict__)
             print(f"Сессия загружена: {filepath}")
             self.ubdate_truck_scheme()
             self.update_company_and_car_fields()

@@ -5,12 +5,57 @@ class CarFrame(tk.Frame):
     def __init__(self, master: tk.Tk, vehicle_data: VehicleAlignmentData):
         super().__init__(master)
         self.vehicle_data = vehicle_data
+        self._truck_body_type = vehicle_data.body_type
+        self._axel_value = {}
+        self.flagWrite = False
+
+    @property
+    def body_type(self):
+        return self._truck_body_type
+
+    def updateUIAxelParam(self):
+        """Обновление значения параметров"""
+        self.flagWrite = True  # Блокируем обратные обновления spinbox
+
+        for key, var in self._axel_value.items():
+            axle_index, parameter, side, stage = key
+            value = 0.0
+
+            # Определяем, какое значение брать из vehicle_data
+            try:
+                if parameter == "camber":
+                    value = self.vehicle_data.get_camber(axle_index, side, stage) or 0.0
+                elif parameter == "toe":
+                    value = self.vehicle_data.get_toe(axle_index, side, stage) or 0.0
+                elif parameter == "caster_angle":
+                    value = self.vehicle_data.get_caster_angle(axle_index, side, stage) or 0.0
+                elif parameter == "steering_axis_inclination":
+                    value = self.vehicle_data.get_steering_axis_inclination(axle_index, side, stage) or 0.0
+                elif parameter == "turning_angle_difference":
+                    value = self.vehicle_data.get_turning_angle_difference(axle_index, side, stage) or 0.0
+                elif parameter == "axel_shift":
+                    value = self.vehicle_data.get_axel_shift(axle_index, side, stage) or 0.0
+                elif parameter == "axle_twist":
+                    value = self.vehicle_data.get_axle_twist(axle_index, side, stage) or 0.0
+                else:
+                    continue  # Если параметр неизвестен — пропускаем
+            except AttributeError:
+                continue  # Если vehicle_data не содержит метода — пропускаем
+            
+            try:
+                value = float(value)
+            except:
+                value = 0.0
+            var.set(value)
+
+        self.flagWrite = False  # Разблокируем обновления
     
     # ----------- Таблица параметров подруливающего колеса -----------
     def creatTableSteerableWheelParams(self, parent_frame: tk.Frame, axle_index: int, side: str) -> tk.Frame: 
         operations = ["Развал", "Схождение", "Угол продольного\n наклона шкворня",
                     "Угол поперечного\n наклона шкворня", "Разность углов\n в повороте"]
         headers = ["До", "Операция", "После"]
+        paramter = {1: "camber", 2: "toe", 3: "caster_angle", 4: "steering_axis_inclination", 5: "turning_angle_difference"}
 
         table = tk.Frame(parent_frame)
         # Заголовки
@@ -36,14 +81,14 @@ class CarFrame(tk.Frame):
                 val_before = self.vehicle_data.get_turning_angle_difference(axle_index, side, "before") 
                 val_after = self.vehicle_data.get_turning_angle_difference(axle_index, side, "after")
             
-            val_before = 0 if val_before is None else val_before
-            val_after = 0 if val_after is None else val_after
+            val_before = 0.0 if val_before is None else val_before
+            val_after = 0.0 if val_after is None else val_after
 
             var_before = tk.DoubleVar()
-            var_before.set(val_before)        
+            var_before.set(val_before)            
             spin_before = tk.Spinbox(table, from_=-40, to=40, increment=0.01, textvariable=var_before, width=8)
             spin_before.grid(row=row, column=0, sticky="nsew")
-            var_before.trace_add("write  ", lambda *args, v=var_before, op_index=row, side=side,
+            var_before.trace_add("write", lambda *args, v=var_before, op_index=row, side=side,
                                 idx=axle_index: self.on_steerable_wheel_params_update(op_index, idx, side, "before", v))
             
             lbl_op = tk.Label(table, text=op, borderwidth=1, relief="ridge", padx=2, pady=0)
@@ -53,9 +98,13 @@ class CarFrame(tk.Frame):
             var_after.set(val_after)        
             spin_after = tk.Spinbox(table, from_=-40, to=40, increment=0.01, textvariable=var_after, width=8)
             spin_after.grid(row=row, column=2, sticky="nsew")
-            var_after.trace_add("write  ", lambda *args, v=var_after, op_index=row, side=side,
+            var_after.trace_add("write", lambda *args, v=var_after, op_index=row, side=side,
                                 idx=axle_index: self.on_steerable_wheel_params_update(op_index, idx, side, "after", v))
-        
+
+            # Сохраняем поля для обновления
+            self._axel_value[(axle_index, paramter[row], side, "before")] = var_before
+            self._axel_value[(axle_index, paramter[row], side, "after")] = var_after
+
         # Настройка растяжки
         for i in range(len(operations)+1):
             table.rowconfigure(i, weight=1)
@@ -67,6 +116,9 @@ class CarFrame(tk.Frame):
         return table
     
     def on_steerable_wheel_params_update(self, operation_index: str, axle_index: int, side: str, stage: str, var: tk.DoubleVar):
+        if self.flagWrite:
+            return
+        
         try:
             value = float(var.get())
             if(operation_index == 1):
@@ -81,12 +133,13 @@ class CarFrame(tk.Frame):
                 self.vehicle_data.set_turning_angle_difference(axle_index, side, stage, value)
         except ValueError:
             pass
-    
+
     # ----------- Таблица параметров фиксированного колеса -----------
     def creatTableFixedWheelParams(self, parent_frame: tk.Frame, axle_index: int, side: str,
                                    axel_shift=True, axle_twist=True) -> tk.Frame:        
         operations = ["Развал", "Сдвиг оси", "Перекос оси"]
         headers = ["До", "Операция", "После"]
+        paramter = {1: "camber", 2: "axel_shift", 3: "axle_twist"}
 
         table = tk.Frame(parent_frame)
         # Заголовки
@@ -110,8 +163,8 @@ class CarFrame(tk.Frame):
                 if(not axle_twist):
                     continue  # Пропустить эту строку, если перекос оси не применяется
 
-            val_before = 0 if val_before is None else val_before
-            val_after = 0 if val_after is None else val_after
+            val_before = 0.0 if val_before is None else val_before
+            val_after = 0.0 if val_after is None else val_after
 
             var_before = tk.DoubleVar()
             var_before.set(val_before)        
@@ -129,6 +182,10 @@ class CarFrame(tk.Frame):
             spin_after.grid(row=row, column=2, sticky="nsew")
             var_after.trace_add("write", lambda *args, v=var_after, op_index=row, side=side,
                                 idx=axle_index: self.on_fixed_wheel_params_update(op_index, idx, side, "after", v))
+            
+            # Сохраняем поля для обновления
+            self._axel_value[(axle_index, paramter[row], side, "before")] = var_before
+            self._axel_value[(axle_index, paramter[row], side, "after")] = var_after
 
         # Настройка растяжки
         for i in range(len(operations)+1):
@@ -141,6 +198,9 @@ class CarFrame(tk.Frame):
         return table
     
     def on_fixed_wheel_params_update(self, operation_index: str, axle_index: int, side: str, stage: str, var: tk.DoubleVar):
+        if self.flagWrite:
+            return
+        
         try:
             value = float(var.get())
             if(operation_index == 1):
@@ -166,14 +226,14 @@ class CarFrame(tk.Frame):
         
         var_before = tk.DoubleVar()
         var_before.set(self.vehicle_data.get_total_toe(index, "before") or 0.0)        
-        spin_before = tk.Spinbox(toe_frame, from_=-20, to=20, increment=0.01, textvariable=var_before, width=8)
+        spin_before = tk.Spinbox(toe_frame, from_=-40, to=40, increment=0.01, textvariable=var_before, width=8)
         spin_before.grid(row=2, column=0, sticky="nsew")       
         var_before.trace_add("write", lambda *args, v=var_before, 
                              idx=index: self.on_total_toe_update(idx, "before", v)) 
 
         var_after = tk.DoubleVar()
         var_after.set(self.vehicle_data.get_total_toe(index, "after") or 0.0)        
-        val_after = tk.Spinbox(toe_frame, from_=-20, to=20, increment=0.01, textvariable=var_after, width=8)
+        val_after = tk.Spinbox(toe_frame, from_=-40, to=40, increment=0.01, textvariable=var_after, width=8)
         val_after.grid(row=2, column=1, sticky="nsew")
         var_after.trace_add("write", lambda *args, v=var_after, 
                             idx=index: self.on_total_toe_update(idx, "after", v))
@@ -202,13 +262,13 @@ class CarFrame(tk.Frame):
         
         var_before = tk.DoubleVar()
         var_before.set(self.vehicle_data.get_middle_position_steering_wheel("before") or 0.0)        
-        spin_before = tk.Spinbox(frame, from_=-20, to=20, increment=0.01, textvariable=var_before, width=8)
+        spin_before = tk.Spinbox(frame, from_=-40, to=40, increment=0.01, textvariable=var_before, width=8)
         spin_before.grid(row=2, column=0, sticky="nsew")       
         var_before.trace_add("write", lambda *args, v=var_before: self.on_middle_position_steering_wheel_update("before", v)) 
 
         var_after = tk.DoubleVar()
         var_after.set(self.vehicle_data.get_middle_position_steering_wheel("after") or 0.0)        
-        val_after = tk.Spinbox(frame, from_=-20, to=20, increment=0.01, textvariable=var_after, width=8)
+        val_after = tk.Spinbox(frame, from_=-40, to=40, increment=0.01, textvariable=var_after, width=8)
         val_after.grid(row=2, column=1, sticky="nsew")
         var_after.trace_add("write", lambda *args, v=var_after: self.on_middle_position_steering_wheel_update("after", v))
         return frame

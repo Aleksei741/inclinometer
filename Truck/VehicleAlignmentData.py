@@ -60,6 +60,7 @@ class VehicleAlignmentData:
     def __init__(self, body_type: TruckBodyType = None):
         self._lock = RLock()
         
+        self._truck_body_type = None
         self._steerable_axles: List[SteerableAxle] = []
         self._fixed_axles: List[FixedAxle] = []
         self.clear_data()
@@ -187,6 +188,14 @@ class VehicleAlignmentData:
     def set_body_type(self, body_type: TruckBodyType):
         """Устанавливает кузов и инициализирует оси по типу кузова."""
         with self._lock:
+            # Если текущие данные совпадают
+            if self._truck_body_type and self._truck_body_type == body_type:
+                print(f"Идентичный тип кузова: {body_type.name}, "
+                f"всего осей={body_type.total_axles}, "
+                f"подруливающих={body_type.steerable_axles}, "
+                f"фиксированных={body_type.fixed_axles}")
+                return
+
             if not isinstance(body_type, TruckBodyType):
                 raise ValueError("body_type должен быть экземпляром TruckBodyType")
             
@@ -235,8 +244,7 @@ class VehicleAlignmentData:
     def _get_axle(self, axle_index: int):
         total_axles = len(self._steerable_axles) + len(self._fixed_axles)
         if axle_index < 0 or axle_index >= total_axles:
-            print(f"Некорректный индекс оси: {axle_index}, всего осей: {total_axles}")
-            return None, None
+            raise ValueError(f"Некорректный индекс оси: {axle_index}, всего осей: {total_axles}")
 
         if axle_index < len(self._steerable_axles):
             return self._steerable_axles[axle_index], "подруливающая"
